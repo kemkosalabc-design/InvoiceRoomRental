@@ -192,7 +192,7 @@
 
     <div id="printable-invoice" class="invoice-preview">
         <div class="invoice-header">
-            <div style="font-size: 11px;" id="invHeaderLeft"><b>ផ្ទះសំណាក់</b></div>
+            <div style="font-size: 11px; line-height: 1.2;" id="invHeaderLeft"><b>ផ្ទះសំណាក់</b></div>
             <div class="invoice-title-center">
                 <h3 id="invHeaderTitleKm">ផ្ទះសំណាក់</h3>
                 <h4 id="invHeaderTitleEn">Guest-house</h4>
@@ -202,10 +202,17 @@
         </div>
         <div class="invoice-meta"><div>For: <span id="invPrintFor">...</span></div></div>
         <div style="margin-bottom: 8px; font-size: 12px;">បន្ទប់: <span id="invPrintRoom">01</span> - <span id="invPrintRoomPrice">90</span>$</div>
+        
         <div id="invWaterSectionContainer"></div>
         <div id="invElecSectionContainer"></div>
-        <div id="invExtrasContainer" style="display:none; font-size: 12px;"></div>
-        <div class="invoice-totals">សរុបรวม: <span id="invPrintGrandTotal" class="grand-total-text">0.00</span> $</div>
+        
+        <!-- Additional Fees Receipt Container -->
+        <div id="invExtrasContainer" style="font-size: 12px; margin-bottom: 8px; border-top: 1px dashed #000; padding-top: 4px; display: none;"></div>
+
+        <div class="invoice-totals" style="line-height: 1.6;">
+            សរុបថ្លៃទឹក អគ្គិសនី និងសេវាកម្មផ្សេងៗ: <span id="invPrintUtilityTotalRiel">0</span> រៀល (<span id="invPrintUtilityTotalDollar">0.00</span> $) <br>
+            សរុប Total: <span id="invPrintGrandTotal" class="grand-total-text">0.00</span> $
+        </div>
     </div>
 
     <div style="margin-top: 16px;"><button class="btn-primary" style="background: var(--success);" onclick="window.print()">🖨️ បោះពុម្ព</button></div>
@@ -224,7 +231,6 @@
 </div>
 
 <script>
-    // ⚠️ បញ្ចូល Web App URL របស់អ្នកនៅទីនេះ៖
     const API_URL = "https://script.google.com/macros/s/AKfycbybd4ip5Rfa0U_x8mR3Rkxbbm7_134eint14C8xiyWV9sgsN2sjiVfbpO4Pey60La87/exec";
 
     let currentUser = null;
@@ -369,17 +375,24 @@
     }
 
     function renderHeaderInfo() {
-        document.getElementById('invHeaderLeft').innerHTML = `<b>${headerInfo.nameKm}</b>`;
+        document.getElementById('invHeaderLeft').innerHTML = `<b>${headerInfo.nameKm}</b><br>${headerInfo.nameEn || ''}`;
         document.getElementById('invHeaderTitleKm').innerText = headerInfo.nameKm;
-        document.getElementById('invHeaderTitleEn').innerText = headerInfo.nameEn;
-        document.getElementById('invBankName').innerText = headerInfo.bankName;
-        document.getElementById('invBankAcc').innerText = headerInfo.bankAcc;
+        document.getElementById('invHeaderTitleEn').innerText = headerInfo.nameEn || '';
+        document.getElementById('invBankName').innerText = headerInfo.bankName || '';
+        document.getElementById('invBankAcc').innerText = headerInfo.bankAcc || '';
     }
 
     async function openHeaderSettingsModal() {
         let km = prompt("ឈ្មោះខ្មែរ:", headerInfo.nameKm);
         if (km === null) return;
-        headerInfo.nameKm = km;
+        let en = prompt("ឈ្មោះអង់គ្លេស:", headerInfo.nameEn);
+        if (en === null) return;
+        let bName = prompt("ឈ្មោះធនាគារ:", headerInfo.bankName);
+        if (bName === null) return;
+        let bAcc = prompt("លេខគណនី:", headerInfo.bankAcc);
+        if (bAcc === null) return;
+
+        headerInfo = { nameKm: km, nameEn: en, bankName: bName, bankAcc: bAcc };
         await saveDataToCloud("header", headerInfo);
         renderHeaderInfo();
     }
@@ -445,23 +458,134 @@
 
     function calculateInvoice() {
         let roomPrice = parseFloat(document.getElementById('roomPrice').value) || 0;
-        let wIsFlat = document.getElementById('waterFlatRateCheck').checked;
-        let wTotal = wIsFlat ? parseFloat(document.getElementById('waterFlatAmount').value) || 0 : (parseFloat(document.getElementById('waterConsumption').value) || 0) * (parseFloat(document.getElementById('waterUnitPrice').value) || 2500);
-        let eIsFlat = document.getElementById('elecFlatRateCheck').checked;
-        let eTotal = eIsFlat ? parseFloat(document.getElementById('elecFlatAmount').value) || 0 : (parseFloat(document.getElementById('elecConsumption').value) || 0) * (parseFloat(document.getElementById('elecUnitPrice').value) || 1500);
         
-        let trash = parseFloat(document.getElementById('trashFee').value) || 0;
-        let internet = parseFloat(document.getElementById('internetFee').value) || 0;
-        let parking = parseFloat(document.getElementById('parkingFee').value) || 0;
-        let other = parseFloat(document.getElementById('otherFee').value) || 0;
+        let waterIsFlat = document.getElementById('waterFlatRateCheck').checked;
+        let waterTotalRielCalc = 0;
+        let waterCons = 0;
+        let waterCur = 0;
+        let waterPrev = 0;
+        let waterUnit = parseFloat(document.getElementById('waterUnitPrice').value) || 2500;
 
-        let totalRiel = wTotal + eTotal + trash + internet + parking + other;
-        let totalDollar = totalRiel / exchangeRate;
-        let grand = roomPrice + totalDollar;
+        let elecIsFlat = document.getElementById('elecFlatRateCheck').checked;
+        let elecTotalRielCalc = 0;
+        let elecCons = 0;
+        let elecCur = 0;
+        let elecPrev = 0;
+        let elecUnit = parseFloat(document.getElementById('elecUnitPrice').value) || 1500;
 
-        document.getElementById('invPrintRoom').innerText = currentSelectedRoom;
+        let trashFee = parseFloat(document.getElementById('trashFee').value) || 0;
+        let internetFee = parseFloat(document.getElementById('internetFee').value) || 0;
+        let parkingFee = parseFloat(document.getElementById('parkingFee').value) || 0;
+        let otherFee = parseFloat(document.getElementById('otherFee').value) || 0;
+
+        let invWaterContainer = document.getElementById('invWaterSectionContainer');
+        let invElecContainer = document.getElementById('invElecSectionContainer');
+        let invExtrasContainer = document.getElementById('invExtrasContainer');
+
+        if (waterIsFlat) {
+            waterTotalRielCalc = parseFloat(document.getElementById('waterFlatAmount').value) || 0;
+            invWaterContainer.innerHTML = `
+                <div style="font-size: 12px; margin-bottom: 4px; font-weight: bold; border-top: 1px dashed #000; padding-top: 4px;">
+                    💧 ទឹក (Water Supply) - គិតជាប្រចាំខែ: <span style="float: right;">${waterTotalRielCalc.toLocaleString()} រៀល</span>
+                </div>
+            `;
+        } else {
+            waterCur = parseFloat(document.getElementById('waterCurrent').value) || 0;
+            waterPrev = parseFloat(document.getElementById('waterPrevious').value) || 0;
+            waterCons = Math.max(0, waterCur - waterPrev);
+            waterTotalRielCalc = waterCons * waterUnit;
+
+            document.getElementById('waterConsumption').value = waterCons;
+            document.getElementById('waterTotalRiel').value = waterTotalRielCalc.toLocaleString();
+
+            invWaterContainer.innerHTML = `
+                <div style="font-size: 12px; margin-bottom: 2px;">ទឹក (Water Supply) ០១គីបតម្លៃ: ${waterUnit.toLocaleString()}.00 Riles</div>
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th>លេខថ្មី / Current:</th>
+                            <th>លេខចាស់ / Previous:</th>
+                            <th>ចំណុចប្រើប្រាស់ / Consumption:</th>
+                            <th>តម្លៃសរុប / Value:</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>${waterCur}</td>
+                            <td>${waterPrev}</td>
+                            <td>${waterCons}</td>
+                            <td>${waterTotalRielCalc > 0 ? waterTotalRielCalc.toLocaleString() : '-'}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        }
+
+        if (elecIsFlat) {
+            elecTotalRielCalc = parseFloat(document.getElementById('elecFlatAmount').value) || 0;
+            invElecContainer.innerHTML = `
+                <div style="font-size: 12px; margin-bottom: 4px; font-weight: bold; border-top: 1px dashed #000; padding-top: 4px;">
+                    ⚡ អគ្គិសនី (Electricity) - គិតជាប្រចាំខែ: <span style="float: right;">${elecTotalRielCalc.toLocaleString()} រៀល</span>
+                </div>
+            `;
+        } else {
+            elecCur = parseFloat(document.getElementById('elecCurrent').value) || 0;
+            elecPrev = parseFloat(document.getElementById('elecPrevious').value) || 0;
+            elecCons = Math.max(0, elecCur - elecPrev);
+            elecTotalRielCalc = elecCons * elecUnit;
+
+            document.getElementById('elecConsumption').value = elecCons;
+            document.getElementById('elecTotalRiel').value = elecTotalRielCalc.toLocaleString();
+
+            invElecContainer.innerHTML = `
+                <div style="font-size: 12px; margin-bottom: 2px;">អគ្គិសនី (Electricity) ០១គីឡូវ៉ាត់តម្លៃ: ${elecUnit.toLocaleString()}.00 Riles</div>
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th>លេខថ្មី / Current:</th>
+                            <th>លេខចាស់ / Previous:</th>
+                            <th>ចំណុចប្រើប្រាស់ / Consumption:</th>
+                            <th>តម្លៃសរុប / Value:</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>${elecCur}</td>
+                            <td>${elecPrev}</td>
+                            <td>${elecCons}</td>
+                            <td>${elecTotalRielCalc > 0 ? elecTotalRielCalc.toLocaleString() : '-'}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        }
+
+        let extrasHtml = '';
+        if (trashFee > 0) extrasHtml += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>🗑️ ថ្លៃសំរាម (Trash Fee):</span> <span>${trashFee.toLocaleString()} រៀល</span></div>`;
+        if (internetFee > 0) extrasHtml += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>🌐 ថ្លៃអ៊ិនធឺណែត (Internet Fee):</span> <span>${internetFee.toLocaleString()} រៀល</span></div>`;
+        if (parkingFee > 0) extrasHtml += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>🅿️ ថ្លៃចំណត (Parking Fee):</span> <span>${parkingFee.toLocaleString()} រៀល</span></div>`;
+        if (otherFee > 0) extrasHtml += `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>🏷️ ថ្លៃផ្សេងៗ (Other Fee):</span> <span>${otherFee.toLocaleString()} រៀល</span></div>`;
+
+        if (extrasHtml !== '') {
+            invExtrasContainer.style.display = 'block';
+            invExtrasContainer.innerHTML = extrasHtml;
+        } else {
+            invExtrasContainer.style.display = 'none';
+            invExtrasContainer.innerHTML = '';
+        }
+
+        let invoiceDateVal = document.getElementById('invoiceDate').value;
+        document.getElementById('invPrintFor').innerText = invoiceDateVal ? invoiceDateVal : '.....................';
+        document.getElementById('invPrintRoom').innerText = currentSelectedRoom || '-';
         document.getElementById('invPrintRoomPrice').innerText = roomPrice;
-        document.getElementById('invPrintGrandTotal').innerText = grand.toFixed(2);
+
+        let totalUtilityRiel = waterTotalRielCalc + elecTotalRielCalc + trashFee + internetFee + parkingFee + otherFee;
+        let totalUtilityDollar = totalUtilityRiel / exchangeRate;
+        let grandTotal = roomPrice + totalUtilityDollar;
+
+        document.getElementById('invPrintUtilityTotalRiel').innerText = totalUtilityRiel.toLocaleString();
+        document.getElementById('invPrintUtilityTotalDollar').innerText = totalUtilityDollar.toFixed(2);
+        document.getElementById('invPrintGrandTotal').innerText = grandTotal.toFixed(2);
     }
 
     async function saveAndGenerateInvoice() {
@@ -469,6 +593,13 @@
             id: Date.now(),
             room: currentSelectedRoom,
             date: document.getElementById('invoiceDate').value,
+            roomPrice: parseFloat(document.getElementById('roomPrice').value),
+            waterIsFlat: document.getElementById('waterFlatRateCheck').checked,
+            elecIsFlat: document.getElementById('elecFlatRateCheck').checked,
+            trashFee: parseFloat(document.getElementById('trashFee').value) || 0,
+            internetFee: parseFloat(document.getElementById('internetFee').value) || 0,
+            parkingFee: parseFloat(document.getElementById('parkingFee').value) || 0,
+            otherFee: parseFloat(document.getElementById('otherFee').value) || 0,
             grandTotal: parseFloat(document.getElementById('invPrintGrandTotal').innerText) || 0
         };
         historyList.unshift(record);
@@ -481,7 +612,7 @@
         let c = document.getElementById('historyContainer');
         c.innerHTML = historyList.length === 0 ? "មិនមានទិន្នន័យ" : "";
         historyList.forEach(item => {
-            c.innerHTML += `<div class="history-item"><div><b>បន្ទប់ ${item.room}</b><br><small>${item.date}</small></div><div>$${item.grandTotal.toFixed(2)}</div></div>`;
+            c.innerHTML += `<div class="history-item"><div><b>បន្ទប់ ${item.room}</b><br><small>${item.date}</small></div><div>$${(item.grandTotal || 0).toFixed(2)}</div></div>`;
         });
     }
 
@@ -495,7 +626,7 @@
     function initFilterOptions() {}
     function renderMonthlySummary() {}
     function renderYearlySummary() {}
-    function onInvoiceDateChange() {}
+    function onInvoiceDateChange() { calculateInvoice(); }
 </script>
 </body>
 </html>
