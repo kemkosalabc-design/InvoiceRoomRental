@@ -22,7 +22,7 @@
         .container { max-width: 600px; margin: 0 auto; padding-bottom: 50px; }
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
         .auth-card { background: var(--card-bg); width: 100%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 1px solid var(--border-color); text-align: center; }
-        #founderModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; padding: 20px; }
+        #founderModal, #paymentCalendarModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background: var(--card-bg); width: 100%; max-width: 500px; padding: 24px; border-radius: 18px; border: 1px solid var(--border-color); max-height: 90vh; overflow-y: auto; }
         .user-table { width: 100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 20px; font-size: 13px; }
         .user-table th, .user-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
@@ -44,7 +44,6 @@
         .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); }
         .form-control { width: 100%; padding: 11px 14px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--input-bg); color: var(--text-color); font-size: 15px; }
         
-        /* Highlighted style for previous meter inputs */
         .highlight-input {
             background-color: rgba(0, 113, 227, 0.08) !important;
             border-color: var(--primary) !important;
@@ -56,6 +55,7 @@
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .grid-extras { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .btn-primary { background: var(--primary); color: white; border: none; width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 15px; }
+        .btn-success { background: var(--success); color: white; border: none; padding: 8px 12px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 13px; }
         
         .action-button-group { display: flex; gap: 10px; }
         .btn-cancel-edit { background: var(--danger); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 15px; display: none; width: 150px; text-align: center; }
@@ -85,6 +85,14 @@
         .btn-edit { background: var(--warning); color: white; }
         .btn-delete { background: var(--danger); color: white; }
         .sync-status { font-size: 11px; color: var(--text-secondary); text-align: center; margin-top: 16px; }
+
+        /* Calendar Modal Styles */
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-weight: 600; font-size: 15px; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .cal-day-cell { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 4px; text-align: center; font-size: 12px; min-height: 65px; display: flex; flex-direction: column; justify-content: space-between; }
+        .cal-day-num { font-weight: 700; margin-bottom: 4px; }
+        .cal-rooms-list { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; }
+        .cal-room-tag { background: var(--success); color: white; font-size: 9px; padding: 1px 4px; border-radius: 4px; font-weight: 600; }
 
         @page {
             size: auto;
@@ -147,6 +155,22 @@
     </div>
 </div>
 
+<!-- Modal for Payment Calendar -->
+<div id="paymentCalendarModal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="section-title">
+            <span>📅 ថ្ងៃត្រូវបង់ប្រាក់លើកក្រោយ</span>
+            <button class="btn-sm btn-delete" onclick="closePaymentCalendarModal()" style="width: auto;">បិទ</button>
+        </div>
+        <div class="cal-header">
+            <button class="btn-sm btn-edit" onclick="changeCalendarMonth(-1)">◀ ខែមុន</button>
+            <span id="calMonthTitle">ខែ ... ឆ្នាំ ...</span>
+            <button class="btn-sm btn-edit" onclick="changeCalendarMonth(1)">ខែបន្ទាប់ ▶</button>
+        </div>
+        <div id="calGridContainer" class="cal-grid"></div>
+    </div>
+</div>
+
 <div class="container">
     <header>
         <div class="logo-title" id="appHeaderTitle">🏠 វិក័យបត្របន្ទប់ជួល</div>
@@ -169,6 +193,7 @@
     <div class="section-title">
         <span>ជ្រើសរើសបន្ទប់</span>
         <div style="display: flex; gap: 8px;">
+            <button class="btn-success" onclick="openPaymentCalendarModal()">ថ្ងៃត្រូវបង់ប្រាក់លើកក្រោយ</button>
             <button class="btn-sm btn-delete" onclick="deleteRoomModal()" style="background: var(--danger); color: white;">លុបបន្ទប់</button>
             <button class="btn-sm btn-primary" onclick="addNewRoomModal()" style="width: auto;">+ បន្ថែមបន្ទប់</button>
         </div>
@@ -225,6 +250,12 @@
             <div><label style="font-size: 11px;">🌐 អ៊ិនធឺណែត (រៀល)</label><input type="number" id="internetFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
             <div><label style="font-size: 11px;">🅿️ ចំណត (រៀល)</label><input type="number" id="parkingFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
             <div><label style="font-size: 11px;">🏷️ ផ្សេងៗ (រៀល)</label><input type="number" id="otherFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
+        </div>
+
+        <!-- Added Live Total Display Box here -->
+        <div class="form-group" style="background: rgba(0, 113, 227, 0.08); border: 1px solid var(--primary); padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <span style="font-size: 14px; font-weight: 700; color: var(--primary);">💰 សរុបទឹកប្រាក់ (Grand Total):</span>
+            <span id="liveGrandTotalDisplay" style="font-size: 18px; font-weight: 700; color: var(--primary);">0.00 $</span>
         </div>
 
         <div class="action-button-group">
@@ -287,6 +318,7 @@
     let historyList = [];
     let headerInfo = {};
     let editingRecordId = null;
+    let currentCalDate = new Date();
 
     window.onload = async function() {
         await fetchUsersFromSheet();
@@ -740,6 +772,9 @@
         document.getElementById('invPrintUtilityTotalRiel').innerText = totalUtilityRiel.toLocaleString();
         document.getElementById('invPrintUtilityTotalDollar').innerText = totalUtilityDollar.toFixed(2);
         document.getElementById('invPrintGrandTotal').innerText = grandTotal.toFixed(2);
+
+        // Update Live Grand Total Display Box
+        document.getElementById('liveGrandTotalDisplay').innerText = grandTotal.toFixed(2) + " $";
     }
 
     async function saveAndGenerateInvoice() {
@@ -1030,6 +1065,76 @@
                 </div>
             </div>
         `;
+    }
+
+    // Payment Calendar Modal Logic
+    function openPaymentCalendarModal() {
+        currentCalDate = new Date();
+        renderPaymentCalendar();
+        document.getElementById('paymentCalendarModal').style.display = 'flex';
+    }
+
+    function closePaymentCalendarModal() {
+        document.getElementById('paymentCalendarModal').style.display = 'none';
+    }
+
+    function changeCalendarMonth(direction) {
+        currentCalDate.setMonth(currentCalDate.getMonth() + direction);
+        renderPaymentCalendar();
+    }
+
+    function renderPaymentCalendar() {
+        const titleEl = document.getElementById('calMonthTitle');
+        const gridEl = document.getElementById('calGridContainer');
+
+        let year = currentCalDate.getFullYear();
+        let month = currentCalDate.getMonth();
+
+        const khmerMonths = ["មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"];
+        titleEl.innerText = `ខែ ${khmerMonths[month]} ឆ្នាំ ${year}`;
+
+        // Map due dates to rooms for this specific year and month
+        let dueMap = {};
+        let latestRoomRecords = {};
+        historyList.forEach(item => {
+            if (item && item.room && item.date) {
+                if (!latestRoomRecords[item.room] || new Date(item.date) > new Date(latestRoomRecords[item.room].date)) {
+                    latestRoomRecords[item.room] = item;
+                }
+            }
+        });
+
+        for (let roomNum in latestRoomRecords) {
+            let lastDate = new Date(latestRoomRecords[roomNum].date);
+            let dueDate = new Date(lastDate);
+            dueDate.setMonth(dueDate.getMonth() + 1);
+
+            if (dueDate.getFullYear() === year && dueDate.getMonth() === month) {
+                let dNum = dueDate.getDate();
+                if (!dueMap[dNum]) dueMap[dNum] = [];
+                dueMap[dNum].push(roomNum);
+            }
+        }
+
+        let daysInMonth = new Date(year, month + 1, 0).getDate();
+        gridEl.innerHTML = '';
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            let roomsOnThisDay = dueMap[day] || [];
+            let hasRooms = roomsOnThisDay.length > 0;
+
+            let cellBg = hasRooms ? 'rgba(52, 199, 89, 0.12)' : 'var(--input-bg)';
+            let cellBorder = hasRooms ? 'var(--success)' : 'var(--border-color)';
+
+            let roomsTagsHtml = roomsOnThisDay.map(r => `<span class="cal-room-tag">ប.${r}</span>`).join('');
+
+            gridEl.innerHTML += `
+                <div class="cal-day-cell" style="background: ${cellBg}; border-color: ${cellBorder};">
+                    <div class="cal-day-num" style="color: ${hasRooms ? 'var(--success)' : 'var(--text-color)'};">${day}</div>
+                    <div class="cal-rooms-list">${roomsTagsHtml}</div>
+                </div>
+            `;
+        }
     }
 
     function editRecord(id) {
