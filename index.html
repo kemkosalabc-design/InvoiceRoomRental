@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រងវិក័យបត្របន្ទប់ជួល (Google Sheets Connected)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0071e3; --primary-dark: #0077ed; --success: #34c759; --danger: #ff3b30; --warning: #ff9500;
+            --bg-color: #f5f5f7; --card-bg: #ffffff; --alt-bg: #fbfbfd; --text-color: #1d1d1f;
+            --text-secondary: #86868b; --border-color: #d2d2d7; --input-bg: #f5f5f7; --input-focus-bg: #ffffff;
+            --tab-active-bg: #d3e3fd; --tab-active-color: #001d35;
+        }
+        .dark-mode {
+            --bg-color: #000000; --card-bg: #161617; --alt-bg: #1d1d1f; --text-color: #f5f5f7;
+            --text-secondary: #a1a1a6; --border-color: #424245; --input-bg: #2c2c2e; --input-focus-bg: #161617;
+            --tab-active-bg: #004a77; --tab-active-color: #c2e7ff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; transition: background-color 0.3s; }
+        .container { max-width: 600px; margin: 0 auto; padding-bottom: 50px; }
+        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
+        .auth-card { background: var(--card-bg); width: 100%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 1px solid var(--border-color); text-align: center; }
+        #founderModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: var(--card-bg); width: 100%; max-width: 500px; padding: 24px; border-radius: 18px; border: 1px solid var(--border-color); max-height: 90vh; overflow-y: auto; }
+        .user-table { width: 100%; border-collapse: collapse; margin-top: 12px; margin-bottom: 20px; font-size: 13px; }
+        .user-table th, .user-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
+        .user-table th { background: var(--alt-bg); }
+        header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 16px 20px; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); }
+        .logo-title { font-size: 18px; font-weight: 700; }
+        .header-controls { display: flex; gap: 10px; align-items: center; }
+        .icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-color); }
+        .banner { background: var(--card-bg); padding: 14px 20px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border: 1px solid var(--border-color); font-size: 14px; }
+        .banner input { width: 80px; padding: 6px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-color); text-align: center; font-weight: 600; }
+        .notification-box { background: rgba(255, 149, 0, 0.1); border-left: 4px solid var(--warning); padding: 14px; border-radius: 12px; margin-bottom: 16px; font-size: 13px; color: var(--warning); font-weight: 500; }
+        .section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .rooms-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+        .room-chip { background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px 8px; text-align: center; border-radius: 12px; cursor: pointer; font-size: 13px; }
+        .room-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 18px; border: 1px solid var(--border-color); margin-bottom: 24px; }
+        .form-group { margin-bottom: 14px; text-align: left; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); }
+        .form-control { width: 100%; padding: 11px 14px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--input-bg); color: var(--text-color); font-size: 15px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .grid-extras { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .btn-primary { background: var(--primary); color: white; border: none; width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 15px; }
+        .tabs-container { display: flex; gap: 8px; margin-bottom: 16px; background: var(--alt-bg); padding: 4px; border-radius: 20px; border: 1px solid var(--border-color); }
+        .tab-btn { flex: 1; padding: 10px; font-size: 13px; font-weight: 600; border: none; background: transparent; color: var(--text-secondary); border-radius: 16px; cursor: pointer; text-align: center; }
+        .tab-btn.active { background: var(--tab-active-bg); color: var(--tab-active-color); font-weight: 700; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .filter-box { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; font-size: 13px; }
+        .filter-box select { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); }
+        .summary-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 14px; margin-bottom: 10px; font-size: 13px; }
+        .invoice-preview { background: #ffffff; color: #000000; padding: 24px; border-radius: 8px; border: 1px solid #000; margin-top: 24px; }
+        .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 12px; }
+        .invoice-title-center { text-align: center; flex-grow: 1; }
+        .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 12px; }
+        .invoice-table th, .invoice-table td { border: 1px solid #000; padding: 6px; text-align: center; }
+        .invoice-table th { background: #f0f0f0; }
+        .utility-row { font-size: 12px; font-weight: bold; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .invoice-totals { font-size: 12px; font-weight: bold; text-align: right; border-top: 1px solid #000; padding-top: 8px; }
+        .grand-total-text { font-size: 16.8px; color: #0071e3; border-bottom: 2px double #0071e3; }
+        .history-item { background: var(--card-bg); border: 1px solid var(--border-color); padding: 14px 16px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .action-btns { display: flex; gap: 8px; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; }
+        .btn-edit { background: var(--warning); color: white; }
+        .btn-delete { background: var(--danger); color: white; }
+        .sync-status { font-size: 11px; color: var(--text-secondary); text-align: center; margin-top: 16px; }
+    </style>
+</head>
+<body>
+
+<div id="authOverlay">
+    <div class="auth-card">
+        <h2>🔐 ចូលប្រើប្រាស់ប្រព័ន្ធ</h2>
+        <p>ទិន្នន័យរក្សាទុកលើ Google Sheets</p>
+        <div class="form-group">
+            <label>ឈ្មោះអ្នកប្រើប្រាស់ (Username)</label>
+            <input type="text" id="loginUser" class="form-control" placeholder="បញ្ចូលឈ្មោះ">
+        </div>
+        <div class="form-group">
+            <label>លេខសម្ងាត់ (Password)</label>
+            <input type="password" id="loginPass" class="form-control" placeholder="បញ្ចូលលេខសម្ងាត់">
+        </div>
+        <button class="btn-primary" onclick="handleLogin()">ចូលប្រព័ន្ធ</button>
+        <div id="loginError" style="color: var(--danger); font-size: 12px; margin-top: 10px; font-weight: 600;"></div>
+    </div>
+</div>
+
+<div id="founderModal">
+    <div class="modal-content">
+        <div class="section-title">
+            <span>👥 គ្រប់គ្រងអ្នកប្រើប្រាស់ (Google Sheets)</span>
+            <button class="btn-sm btn-delete" onclick="closeFounderModal()" style="width: auto;">បិទ</button>
+        </div>
+        <div style="overflow-x: auto;">
+            <table class="user-table">
+                <thead>
+                    <tr><th>Username</th><th>Password</th><th>Role</th><th>សកម្មភាព</th></tr>
+                </thead>
+                <tbody id="founderUserTableBody"></tbody>
+            </table>
+        </div>
+        <button class="btn-primary" onclick="founderAddNewUser()" style="margin-top: 10px;">+ បន្ថែម User ថ្មី</button>
+    </div>
+</div>
+
+<div class="container">
+    <header>
+        <div class="logo-title" id="appHeaderTitle">🏠 វិក័យបត្របន្ទប់ជួល</div>
+        <div class="header-controls">
+            <button class="icon-btn" id="founderSettingsBtn" onclick="openFounderModal()" title="គ្រប់គ្រង User" style="display: none;">👥</button>
+            <button class="icon-btn" onclick="openHeaderSettingsModal()" title="កែសម្រួលក្បាលវិក័យបត្រ">⚙️</button>
+            <button class="icon-btn" onclick="toggleDarkMode()" title="ប្តូរពណ៌ទម្រង់">🌙</button>
+            <button class="icon-btn" onclick="handleLogout()" title="ចាកចេញ" style="color: var(--danger);">🚪</button>
+        </div>
+    </header>
+
+    <div class="banner">
+        <span>អត្រាប្តូរប្រាក់: 1$ = <input type="number" id="exchangeRateInput" value="4000" onchange="updateExchangeRate()"> រៀល</span>
+        <span id="currentDateDisplay" style="font-weight: 500; color: var(--primary);"></span>
+    </div>
+
+    <div id="notificationArea"></div>
+
+    <div class="section-title">
+        <span>ជ្រើសរើសបន្ទប់</span>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn-sm btn-delete" onclick="deleteRoomModal()" style="background: var(--danger); color: white;">លុបបន្ទប់</button>
+            <button class="btn-sm btn-primary" onclick="addNewRoomModal()" style="width: auto;">+ បន្ថែមបន្ទប់</button>
+        </div>
+    </div>
+    <div class="rooms-grid" id="roomsGridContainer"></div>
+
+    <div class="card">
+        <div class="section-title" id="formTitle">បញ្ចូលទិន្នន័យបន្ទប់</div>
+        <div class="form-group">
+            <label>📅 កាលបរិច្ឆេទ</label>
+            <input type="date" id="invoiceDate" class="form-control" onchange="onInvoiceDateChange()">
+        </div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label>💰 តម្លៃបន្ទប់ឈ្នួល ($)</label>
+                <input type="number" id="roomPrice" class="form-control" value="90" oninput="calculateInvoice()">
+            </div>
+        </div>
+        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 16px 0;">
+
+        <div class="utility-row">
+            <span>💧 ទឹក ០១គីបតម្លៃ: <input type="number" id="waterUnitPrice" value="2500" style="width: 75px; padding: 4px; text-align: center;" oninput="calculateInvoice()"> រៀល</span>
+            <label style="display: flex; align-items: center; gap: 6px; color: var(--danger);"><input type="checkbox" id="waterFlatRateCheck" onchange="toggleWaterFlatRate()"> គិតជាប្រចាំខែ</label>
+        </div>
+        <div class="grid-4 form-group" id="waterMeterSection">
+            <div><label style="font-size: 11px;">លេខថ្មី</label><input type="text" id="waterCurrent" class="form-control" oninput="calculateInvoice()"></div>
+            <div><label style="font-size: 11px;">លេខចាស់</label><input type="text" id="waterPrevious" class="form-control" oninput="calculateInvoice()"></div>
+            <div><label style="font-size: 11px;">ប្រើប្រាស់</label><input type="text" id="waterConsumption" class="form-control" disabled></div>
+            <div><label style="font-size: 11px;">តម្លៃសរុប (R)</label><input type="text" id="waterTotalRiel" class="form-control" disabled></div>
+        </div>
+        <div class="form-group" id="waterFlatRateSection" style="display: none;">
+            <label style="font-size: 12px; color: var(--danger);">ទឹកប្រចាំខែ (រៀល):</label>
+            <input type="number" id="waterFlatAmount" class="form-control" value="20000" oninput="calculateInvoice()">
+        </div>
+
+        <div class="utility-row">
+            <span>⚡ អគ្គិសនី ០១គីឡូវ៉ាត់តម្លៃ: <input type="number" id="elecUnitPrice" value="1500" style="width: 75px; padding: 4px; text-align: center;" oninput="calculateInvoice()"> រៀល</span>
+            <label style="display: flex; align-items: center; gap: 6px; color: var(--danger);"><input type="checkbox" id="elecFlatRateCheck" onchange="toggleElecFlatRate()"> គិតជាប្រចាំខែ</label>
+        </div>
+        <div class="grid-4 form-group" id="elecMeterSection">
+            <div><label style="font-size: 11px;">លេខថ្មី</label><input type="text" id="elecCurrent" class="form-control" oninput="calculateInvoice()"></div>
+            <div><label style="font-size: 11px;">លេខចាស់</label><input type="text" id="elecPrevious" class="form-control" oninput="calculateInvoice()"></div>
+            <div><label style="font-size: 11px;">ប្រើប្រាស់</label><input type="text" id="elecConsumption" class="form-control" disabled></div>
+            <div><label style="font-size: 11px;">តម្លៃសរុប (R)</label><input type="text" id="elecTotalRiel" class="form-control" disabled></div>
+        </div>
+        <div class="form-group" id="elecFlatRateSection" style="display: none;">
+            <label style="font-size: 12px; color: var(--danger);">អគ្គិសនីប្រចាំខែ (រៀល):</label>
+            <input type="number" id="elecFlatAmount" class="form-control" value="100000" oninput="calculateInvoice()">
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 16px 0;">
+        <div class="grid-extras form-group">
+            <div><label style="font-size: 11px;">🗑️ សំរាម (រៀល)</label><input type="number" id="trashFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
+            <div><label style="font-size: 11px;">🌐 អ៊ិនធឺណែត (រៀល)</label><input type="number" id="internetFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
+            <div><label style="font-size: 11px;">🅿️ ចំណត (រៀល)</label><input type="number" id="parkingFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
+            <div><label style="font-size: 11px;">🏷️ ផ្សេងៗ (រៀល)</label><input type="number" id="otherFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
+        </div>
+
+        <button class="btn-primary" onclick="saveAndGenerateInvoice()">💾 រក្សាទុក និងបង្កើតវិក័យបត្រ (Sync Google Sheet)</button>
+    </div>
+
+    <div id="printable-invoice" class="invoice-preview">
+        <div class="invoice-header">
+            <div style="font-size: 11px;" id="invHeaderLeft"><b>ផ្ទះសំណាក់</b></div>
+            <div class="invoice-title-center">
+                <h3 id="invHeaderTitleKm">ផ្ទះសំណាក់</h3>
+                <h4 id="invHeaderTitleEn">Guest-house</h4>
+                <h5>វិក័យបត្រ / Invoice</h5>
+            </div>
+            <div class="qr-box"><div id="invBankName">ABA</div><div style="font-weight: bold;" id="invBankAcc">000</div></div>
+        </div>
+        <div class="invoice-meta"><div>For: <span id="invPrintFor">...</span></div></div>
+        <div style="margin-bottom: 8px; font-size: 12px;">បន្ទប់: <span id="invPrintRoom">01</span> - <span id="invPrintRoomPrice">90</span>$</div>
+        <div id="invWaterSectionContainer"></div>
+        <div id="invElecSectionContainer"></div>
+        <div id="invExtrasContainer" style="display:none; font-size: 12px;"></div>
+        <div class="invoice-totals">សរុបรวม: <span id="invPrintGrandTotal" class="grand-total-text">0.00</span> $</div>
+    </div>
+
+    <div style="margin-top: 16px;"><button class="btn-primary" style="background: var(--success);" onclick="window.print()">🖨️ បោះពុម្ព</button></div>
+
+    <div class="section-title" style="margin-top: 28px;">ប្រវត្តិការកត់ត្រា</div>
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchTab('history')">📋 ប្រវត្តិ</button>
+        <button class="tab-btn" onclick="switchTab('monthly')">📊 ប្រចាំខែ</button>
+        <button class="tab-btn" onclick="switchTab('yearly')">📈 ប្រចាំឆ្នាំ</button>
+    </div>
+    <div id="tab-history" class="tab-content active"><div id="historyContainer"></div></div>
+    <div id="tab-monthly" class="tab-content"><div class="filter-box"><span>ខែ:</span><select id="monthSelect" onchange="renderMonthlySummary()"></select></div><div id="monthlySummaryContainer"></div></div>
+    <div id="tab-yearly" class="tab-content"><div class="filter-box"><span>ឆ្នាំ:</span><select id="yearSelect" onchange="renderYearlySummary()"></select></div><div id="yearlySummaryContainer"></div></div>
+
+    <div class="sync-status">🟢 Cloud Connected (Google Sheets)</div>
+</div>
+
+<script>
+    // ⚠️ បញ្ចូល Web App URL របស់អ្នកនៅទីនេះ៖
+    const API_URL = "https://script.google.com/macros/s/AKfycbybd4ip5Rfa0U_x8mR3Rkxbbm7_134eint14C8xiyWV9sgsN2sjiVfbpO4Pey60La87/exec";
+
+    let currentUser = null;
+    let userDatabase = {};
+    let exchangeRate = 4000;
+    let baseRooms = [];
+    for (let i = 1; i <= 30; i++) baseRooms.push(i < 10 ? "0" + i : "" + i);
+    baseRooms.push("Big House");
+
+    let rooms = [];
+    let recordsData = {};
+    let historyList = [];
+    let headerInfo = {};
+
+    window.onload = async function() {
+        await fetchUsersFromSheet();
+        checkSession();
+    };
+
+    async function callAPI(payload) {
+        try {
+            let res = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            return await res.json();
+        } catch(e) {
+            alert("មានបញ្ហាការតភ្ជាប់ Network ជាមួយ Google Sheet!");
+            return null;
+        }
+    }
+
+    async function fetchUsersFromSheet() {
+        let res = await callAPI({ action: "getUsers" });
+        if (res && res.status === "success") {
+            userDatabase = res.users;
+        }
+    }
+
+    function checkSession() {
+        const saved = sessionStorage.getItem('guesthouse_session');
+        if (saved) {
+            currentUser = JSON.parse(saved);
+            document.getElementById('authOverlay').style.display = 'none';
+            initUserData();
+        }
+    }
+
+    async function handleLogin() {
+        let u = document.getElementById('loginUser').value.trim();
+        let p = document.getElementById('loginPass').value.trim();
+        let err = document.getElementById('loginError');
+
+        let res = await callAPI({ action: "login", username: u, password: p });
+        if (res && res.status === "success") {
+            currentUser = { username: u, role: res.role };
+            sessionStorage.setItem('guesthouse_session', JSON.stringify(currentUser));
+            document.getElementById('authOverlay').style.display = 'none';
+            initUserData();
+        } else {
+            err.innerText = "ឈ្មោះ ឬ លេខសម្ងាត់មិនត្រឹមត្រូវ!";
+        }
+    }
+
+    function handleLogout() {
+        sessionStorage.removeItem('guesthouse_session');
+        location.reload();
+    }
+
+    async function initUserData() {
+        let res = await callAPI({ action: "getData", username: currentUser.username });
+        if (res && res.status === "success") {
+            historyList = res.history || [];
+            rooms = res.rooms.length > 0 ? res.rooms : [...baseRooms];
+            headerInfo = res.header || {
+                nameKm: "ផ្ទះសំណាក់ - " + currentUser.username,
+                nameEn: "Guest-house", bankName: "ABA", bankAcc: "000"
+            };
+        }
+
+        if (currentUser.role === 'founder') {
+            document.getElementById('founderSettingsBtn').style.display = 'inline-block';
+        }
+        
+        currentSelectedRoom = rooms[0] || "01";
+        setDefaultDate();
+        renderHeaderInfo();
+        renderRoomsGrid();
+        selectRoom(currentSelectedRoom);
+        initFilterOptions();
+        renderHistory();
+        renderMonthlySummary();
+        renderYearlySummary();
+    }
+
+    async function saveDataToCloud(dataType, payloadData) {
+        await callAPI({
+            action: "saveData",
+            username: currentUser.username,
+            dataType: dataType,
+            payload: payloadData
+        });
+    }
+
+    async function openFounderModal() {
+        await fetchUsersFromSheet();
+        let tbody = document.getElementById('founderUserTableBody');
+        tbody.innerHTML = '';
+        for (let u in userDatabase) {
+            let info = userDatabase[u];
+            tbody.innerHTML += `<tr><td><b>${u}</b></td><td>${info.pass}</td><td>${info.role}</td><td>
+                <button class="btn-sm btn-edit" onclick="editUser('${u}')">កែ</button>
+                ${u !== 'admin' ? `<button class="btn-sm btn-delete" onclick="delUser('${u}')">លុប</button>` : ''}
+            </td></tr>`;
+        }
+        document.getElementById('founderModal').style.display = 'flex';
+    }
+    function closeFounderModal() { document.getElementById('founderModal').style.display = 'none'; }
+
+    async function founderAddNewUser() {
+        let u = prompt("Username ថ្មី:");
+        if (u) {
+            let p = prompt("Password:");
+            if (p) {
+                await callAPI({ action: "saveUser", username: u, password: p, role: "user" });
+                openFounderModal();
+            }
+        }
+    }
+    async function editUser(u) {
+        let p = prompt(`Password ថ្មីសម្រាប់ ${u}:`);
+        if (p) {
+            await callAPI({ action: "saveUser", username: u, password: p, role: userDatabase[u].role });
+            openFounderModal();
+        }
+    }
+    async function delUser(u) {
+        if (confirm(`លុប ${u}?`)) {
+            await callAPI({ action: "deleteUser", username: u });
+            openFounderModal();
+        }
+    }
+
+    function renderHeaderInfo() {
+        document.getElementById('invHeaderLeft').innerHTML = `<b>${headerInfo.nameKm}</b>`;
+        document.getElementById('invHeaderTitleKm').innerText = headerInfo.nameKm;
+        document.getElementById('invHeaderTitleEn').innerText = headerInfo.nameEn;
+        document.getElementById('invBankName').innerText = headerInfo.bankName;
+        document.getElementById('invBankAcc').innerText = headerInfo.bankAcc;
+    }
+
+    async function openHeaderSettingsModal() {
+        let km = prompt("ឈ្មោះខ្មែរ:", headerInfo.nameKm);
+        if (km === null) return;
+        headerInfo.nameKm = km;
+        await saveDataToCloud("header", headerInfo);
+        renderHeaderInfo();
+    }
+
+    function setDefaultDate() {
+        let d = new Date().toISOString().split('T')[0];
+        document.getElementById('invoiceDate').value = d;
+    }
+
+    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+    function updateExchangeRate() { exchangeRate = parseFloat(document.getElementById('exchangeRateInput').value) || 4000; calculateInvoice(); }
+
+    function renderRoomsGrid() {
+        let c = document.getElementById('roomsGridContainer');
+        c.innerHTML = '';
+        rooms.forEach(r => {
+            c.innerHTML += `<div class="room-chip ${r === currentSelectedRoom ? 'active' : ''}" onclick="selectRoom('${r}')">បន្ទប់ ${r}</div>`;
+        });
+    }
+
+    async function addNewRoomModal() {
+        let r = prompt("ឈ្មោះបន្ទប់ថ្មី:");
+        if (r && !rooms.includes(r)) {
+            rooms.push(r);
+            await saveDataToCloud("rooms", rooms);
+            renderRoomsGrid();
+            selectRoom(r);
+        }
+    }
+
+    async function deleteRoomModal() {
+        let r = prompt("បញ្ចូលបន្ទប់ដែលចង់លុប:", currentSelectedRoom);
+        let idx = rooms.indexOf(r);
+        if (idx > -1 && confirm(`លុបបន្ទប់ ${r}?`)) {
+            rooms.splice(idx, 1);
+            await saveDataToCloud("rooms", rooms);
+            currentSelectedRoom = rooms[0] || "";
+            renderRoomsGrid();
+            selectRoom(currentSelectedRoom);
+        }
+    }
+
+    function toggleWaterFlatRate() {
+        let isFlat = document.getElementById('waterFlatRateCheck').checked;
+        document.getElementById('waterMeterSection').style.display = isFlat ? 'none' : 'grid';
+        document.getElementById('waterFlatRateSection').style.display = isFlat ? 'block' : 'none';
+        calculateInvoice();
+    }
+    function toggleElecFlatRate() {
+        let isFlat = document.getElementById('elecFlatRateCheck').checked;
+        document.getElementById('elecMeterSection').style.display = isFlat ? 'none' : 'grid';
+        document.getElementById('elecFlatRateSection').style.display = isFlat ? 'block' : 'none';
+        calculateInvoice();
+    }
+
+    let currentSelectedRoom = "01";
+    function selectRoom(r) {
+        currentSelectedRoom = r;
+        renderRoomsGrid();
+        document.getElementById('formTitle').innerText = `បញ្ចូលទិន្នន័យ: បន្ទប់ ${r}`;
+        calculateInvoice();
+    }
+
+    function calculateInvoice() {
+        let roomPrice = parseFloat(document.getElementById('roomPrice').value) || 0;
+        let wIsFlat = document.getElementById('waterFlatRateCheck').checked;
+        let wTotal = wIsFlat ? parseFloat(document.getElementById('waterFlatAmount').value) || 0 : (parseFloat(document.getElementById('waterConsumption').value) || 0) * (parseFloat(document.getElementById('waterUnitPrice').value) || 2500);
+        let eIsFlat = document.getElementById('elecFlatRateCheck').checked;
+        let eTotal = eIsFlat ? parseFloat(document.getElementById('elecFlatAmount').value) || 0 : (parseFloat(document.getElementById('elecConsumption').value) || 0) * (parseFloat(document.getElementById('elecUnitPrice').value) || 1500);
+        
+        let trash = parseFloat(document.getElementById('trashFee').value) || 0;
+        let internet = parseFloat(document.getElementById('internetFee').value) || 0;
+        let parking = parseFloat(document.getElementById('parkingFee').value) || 0;
+        let other = parseFloat(document.getElementById('otherFee').value) || 0;
+
+        let totalRiel = wTotal + eTotal + trash + internet + parking + other;
+        let totalDollar = totalRiel / exchangeRate;
+        let grand = roomPrice + totalDollar;
+
+        document.getElementById('invPrintRoom').innerText = currentSelectedRoom;
+        document.getElementById('invPrintRoomPrice').innerText = roomPrice;
+        document.getElementById('invPrintGrandTotal').innerText = grand.toFixed(2);
+    }
+
+    async function saveAndGenerateInvoice() {
+        let record = {
+            id: Date.now(),
+            room: currentSelectedRoom,
+            date: document.getElementById('invoiceDate').value,
+            grandTotal: parseFloat(document.getElementById('invPrintGrandTotal').innerText) || 0
+        };
+        historyList.unshift(record);
+        await saveDataToCloud("history", historyList);
+        alert("បានរក្សាទុកទៅ Google Sheets ជោគជ័យ!");
+        renderHistory();
+    }
+
+    function renderHistory() {
+        let c = document.getElementById('historyContainer');
+        c.innerHTML = historyList.length === 0 ? "មិនមានទិន្នន័យ" : "";
+        historyList.forEach(item => {
+            c.innerHTML += `<div class="history-item"><div><b>បន្ទប់ ${item.room}</b><br><small>${item.date}</small></div><div>$${item.grandTotal.toFixed(2)}</div></div>`;
+        });
+    }
+
+    function switchTab(t) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        if(t=='history') { document.querySelectorAll('.tab-btn')[0].classList.add('active'); document.getElementById('tab-history').classList.add('active'); }
+        if(t=='monthly') { document.querySelectorAll('.tab-btn')[1].classList.add('active'); document.getElementById('tab-monthly').classList.add('active'); }
+        if(t=='yearly') { document.querySelectorAll('.tab-btn')[2].classList.add('active'); document.getElementById('tab-yearly').classList.add('active'); }
+    }
+    function initFilterOptions() {}
+    function renderMonthlySummary() {}
+    function renderYearlySummary() {}
+    function onInvoiceDateChange() {}
+</script>
+</body>
+</html>
