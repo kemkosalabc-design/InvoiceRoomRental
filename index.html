@@ -28,12 +28,13 @@
         .user-table th, .user-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
         .user-table th { background: var(--alt-bg); }
         header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 16px 20px; border-radius: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); }
-        .logo-title { font-size: 18px; font-weight: 700; }
-        .header-controls { display: flex; gap: 10px; align-items: center; }
+        .logo-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .welcome-user-text { font-size: 13px; font-weight: 600; color: var(--primary); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        .header-controls { display: flex; gap: 8px; align-items: center; }
         .icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-color); }
         .banner { background: var(--card-bg); padding: 14px 20px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border: 1px solid var(--border-color); font-size: 14px; }
         .banner input { width: 80px; padding: 6px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-color); text-align: center; font-weight: 600; }
-        .notification-box { background: rgba(255, 149, 0, 0.1); border-left: 4px solid var(--warning); padding: 14px; border-radius: 12px; margin-bottom: 16px; font-size: 13px; color: var(--warning); font-weight: 500; }
+        .notification-box { background: rgba(255, 149, 0, 0.12); border-left: 4px solid var(--warning); padding: 14px; border-radius: 12px; margin-bottom: 16px; font-size: 13px; color: var(--warning); font-weight: 500; line-height: 1.5; }
         .section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .rooms-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
         .room-chip { background: var(--card-bg); border: 1px solid var(--border-color); padding: 12px 8px; text-align: center; border-radius: 12px; cursor: pointer; font-size: 13px; }
@@ -42,10 +43,23 @@
         .form-group { margin-bottom: 14px; text-align: left; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); }
         .form-control { width: 100%; padding: 11px 14px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--input-bg); color: var(--text-color); font-size: 15px; }
+        
+        /* Highlighted style for previous meter inputs */
+        .highlight-input {
+            background-color: rgba(0, 113, 227, 0.08) !important;
+            border-color: var(--primary) !important;
+            font-weight: 700;
+            color: var(--primary) !important;
+        }
+
         .grid-2 { display: grid; grid-template-columns: 1fr; gap: 12px; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .grid-extras { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .btn-primary { background: var(--primary); color: white; border: none; width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 15px; }
+        
+        .action-button-group { display: flex; gap: 10px; }
+        .btn-cancel-edit { background: var(--danger); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 15px; display: none; width: 150px; text-align: center; }
+
         .tabs-container { display: flex; gap: 8px; margin-bottom: 16px; background: var(--alt-bg); padding: 4px; border-radius: 20px; border: 1px solid var(--border-color); }
         .tab-btn { flex: 1; padding: 10px; font-size: 13px; font-weight: 600; border: none; background: transparent; color: var(--text-secondary); border-radius: 16px; cursor: pointer; text-align: center; }
         .tab-btn.active { background: var(--tab-active-bg); color: var(--tab-active-color); font-weight: 700; }
@@ -54,6 +68,7 @@
         .filter-box { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; font-size: 13px; }
         .filter-box select { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); }
         .summary-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 14px; margin-bottom: 10px; font-size: 13px; }
+        
         .invoice-preview { background: #ffffff; color: #000000; padding: 24px; border-radius: 8px; border: 1px solid #000; margin-top: 24px; }
         .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 12px; }
         .invoice-title-center { text-align: center; flex-grow: 1; }
@@ -63,12 +78,37 @@
         .utility-row { font-size: 12px; font-weight: bold; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
         .invoice-totals { font-size: 12px; font-weight: bold; text-align: right; border-top: 1px solid #000; padding-top: 8px; }
         .grand-total-text { font-size: 16.8px; color: #0071e3; border-bottom: 2px double #0071e3; }
+
         .history-item { background: var(--card-bg); border: 1px solid var(--border-color); padding: 14px 16px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
         .action-btns { display: flex; gap: 8px; }
         .btn-sm { padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; }
         .btn-edit { background: var(--warning); color: white; }
         .btn-delete { background: var(--danger); color: white; }
         .sync-status { font-size: 11px; color: var(--text-secondary); text-align: center; margin-top: 16px; }
+
+        @page {
+            size: auto;
+            margin: 0mm;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-invoice, #printable-invoice * {
+                visibility: visible;
+            }
+            #printable-invoice {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 20px;
+                border: none;
+                box-shadow: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -76,8 +116,7 @@
 <div id="authOverlay">
     <div class="auth-card">
         <h2>🔐 ចូលប្រើប្រាស់ប្រព័ន្ធ</h2>
-        <p>ទិន្នន័យរក្សាទុកលើ Google Sheets</p>
-        <div class="form-group">
+        <div class="form-group" style="margin-top: 15px;">
             <label>ឈ្មោះអ្នកប្រើប្រាស់ (Username)</label>
             <input type="text" id="loginUser" class="form-control" placeholder="បញ្ចូលឈ្មោះ">
         </div>
@@ -111,6 +150,7 @@
 <div class="container">
     <header>
         <div class="logo-title" id="appHeaderTitle">🏠 វិក័យបត្របន្ទប់ជួល</div>
+        <div class="welcome-user-text" id="welcomeUserDisplay">ជម្រាបសួរលោក/លោកស្រី</div>
         <div class="header-controls">
             <button class="icon-btn" id="founderSettingsBtn" onclick="openFounderModal()" title="គ្រប់គ្រង User" style="display: none;">👥</button>
             <button class="icon-btn" onclick="openHeaderSettingsModal()" title="កែសម្រួលក្បាលវិក័យបត្រ">⚙️</button>
@@ -155,7 +195,7 @@
         </div>
         <div class="grid-4 form-group" id="waterMeterSection">
             <div><label style="font-size: 11px;">លេខថ្មី</label><input type="text" id="waterCurrent" class="form-control" oninput="calculateInvoice()"></div>
-            <div><label style="font-size: 11px;">លេខចាស់</label><input type="text" id="waterPrevious" class="form-control" oninput="calculateInvoice()"></div>
+            <div><label style="font-size: 11px;">លេខចាស់</label><input type="text" id="waterPrevious" class="form-control highlight-input" oninput="calculateInvoice()"></div>
             <div><label style="font-size: 11px;">ប្រើប្រាស់</label><input type="text" id="waterConsumption" class="form-control" disabled></div>
             <div><label style="font-size: 11px;">តម្លៃសរុប (R)</label><input type="text" id="waterTotalRiel" class="form-control" disabled></div>
         </div>
@@ -170,7 +210,7 @@
         </div>
         <div class="grid-4 form-group" id="elecMeterSection">
             <div><label style="font-size: 11px;">លេខថ្មី</label><input type="text" id="elecCurrent" class="form-control" oninput="calculateInvoice()"></div>
-            <div><label style="font-size: 11px;">លេខចាស់</label><input type="text" id="elecPrevious" class="form-control" oninput="calculateInvoice()"></div>
+            <div><label style="font-size: 11px;">លេខចាស់</label><input type="text" id="elecPrevious" class="form-control highlight-input" oninput="calculateInvoice()"></div>
             <div><label style="font-size: 11px;">ប្រើប្រាស់</label><input type="text" id="elecConsumption" class="form-control" disabled></div>
             <div><label style="font-size: 11px;">តម្លៃសរុប (R)</label><input type="text" id="elecTotalRiel" class="form-control" disabled></div>
         </div>
@@ -187,7 +227,10 @@
             <div><label style="font-size: 11px;">🏷️ ផ្សេងៗ (រៀល)</label><input type="number" id="otherFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
         </div>
 
-        <button class="btn-primary" onclick="saveAndGenerateInvoice()">💾 រក្សាទុក និងបង្កើតវិក័យបត្រ (Sync Google Sheet)</button>
+        <div class="action-button-group">
+            <button class="btn-primary" id="saveBtnText" onclick="saveAndGenerateInvoice()">💾 រក្សាទុក និងបង្កើតវិក័យបត្រ</button>
+            <button class="btn-cancel-edit" id="cancelEditBtn" onclick="cancelEditing()">បោះបង់ការកែសម្រួល</button>
+        </div>
     </div>
 
     <div id="printable-invoice" class="invoice-preview">
@@ -200,8 +243,8 @@
             </div>
             <div class="qr-box"><div id="invBankName">ABA</div><div style="font-weight: bold;" id="invBankAcc">000</div></div>
         </div>
-        <div class="invoice-meta"><div>For: <span id="invPrintFor">...</span></div></div>
-        <div style="margin-bottom: 8px; font-size: 12px;">បន្ទប់: <span id="invPrintRoom">01</span> - <span id="invPrintRoomPrice">90</span>$</div>
+        <div style="font-size: 12px; margin-bottom: 4px;">ថ្ងៃទី ខែ ឆ្នាំ: <span id="invPrintFor">...</span></div>
+        <div style="font-size: 12px; margin-bottom: 8px;"><b>បន្ទប់: <span id="invPrintRoom">01</span></b> - <span id="invPrintRoomPrice">90</span>$</div>
         
         <div id="invWaterSectionContainer"></div>
         <div id="invElecSectionContainer"></div>
@@ -243,6 +286,7 @@
     let recordsData = {};
     let historyList = [];
     let headerInfo = {};
+    let editingRecordId = null;
 
     window.onload = async function() {
         await fetchUsersFromSheet();
@@ -272,9 +316,28 @@
     function checkSession() {
         const saved = sessionStorage.getItem('guesthouse_session');
         if (saved) {
-            currentUser = JSON.parse(saved);
+            try {
+                currentUser = JSON.parse(saved);
+            } catch(e) {
+                currentUser = null;
+            }
+        }
+        
+        if (currentUser && currentUser.username) {
             document.getElementById('authOverlay').style.display = 'none';
+            updateWelcomeUserText();
             initUserData();
+        } else {
+            document.getElementById('authOverlay').style.display = 'flex';
+        }
+    }
+
+    function updateWelcomeUserText() {
+        const el = document.getElementById('welcomeUserDisplay');
+        if (currentUser && currentUser.username) {
+            el.innerText = `ជម្រាបសួរលោក/លោកស្រី ${currentUser.username}`;
+        } else {
+            el.innerText = "ជម្រាបសួរលោក/លោកស្រី";
         }
     }
 
@@ -283,11 +346,17 @@
         let p = document.getElementById('loginPass').value.trim();
         let err = document.getElementById('loginError');
 
+        if(!u || !p) {
+            err.innerText = "សូមបញ្ចូលឈ្មោះ និងលេខសម្ងាត់!";
+            return;
+        }
+
         let res = await callAPI({ action: "login", username: u, password: p });
         if (res && res.status === "success") {
             currentUser = { username: u, role: res.role };
             sessionStorage.setItem('guesthouse_session', JSON.stringify(currentUser));
             document.getElementById('authOverlay').style.display = 'none';
+            updateWelcomeUserText();
             initUserData();
         } else {
             err.innerText = "ឈ្មោះ ឬ លេខសម្ងាត់មិនត្រឹមត្រូវ!";
@@ -300,9 +369,11 @@
     }
 
     async function initUserData() {
+        if (!currentUser || !currentUser.username) return;
+
         let res = await callAPI({ action: "getData", username: currentUser.username });
         if (res && res.status === "success") {
-            historyList = res.history || [];
+            historyList = (res.history || []).filter(item => item && item.room && item.room !== "undefined" && item.room !== "null");
             rooms = res.rooms.length > 0 ? res.rooms : [...baseRooms];
             headerInfo = res.header || {
                 nameKm: "ផ្ទះសំណាក់ - " + currentUser.username,
@@ -323,9 +394,58 @@
         renderHistory();
         renderMonthlySummary();
         renderYearlySummary();
+        checkPaymentReminders();
+    }
+
+    function checkPaymentReminders() {
+        let notificationArea = document.getElementById('notificationArea');
+        if (!notificationArea) return;
+
+        let reminders = [];
+        let today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let latestRoomRecords = {};
+        historyList.forEach(item => {
+            if (item && item.room && item.date) {
+                if (!latestRoomRecords[item.room] || new Date(item.date) > new Date(latestRoomRecords[item.room].date)) {
+                    latestRoomRecords[item.room] = item;
+                }
+            }
+        });
+
+        for (let roomNum in latestRoomRecords) {
+            let lastRecord = latestRoomRecords[roomNum];
+            let lastDate = new Date(lastRecord.date);
+            
+            let dueDate = new Date(lastDate);
+            dueDate.setMonth(dueDate.getMonth() + 1);
+            dueDate.setHours(0, 0, 0, 0);
+
+            let diffTime = dueDate.getTime() - today.getTime();
+            let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 2) {
+                let formattedDueDate = `${dueDate.getDate()}-${dueDate.getMonth() + 1}-${dueDate.getFullYear()}`;
+                reminders.push(`⚠️ បន្ទប់ <b>${roomNum}</b> ត្រូវដល់កំណត់បង់ប្រាក់ក្នុងរយៈពេល ២ថ្ងៃទៀត (ថ្ងៃទី ${formattedDueDate})`);
+            } else if (diffDays === 0) {
+                let formattedDueDate = `${dueDate.getDate()}-${dueDate.getMonth() + 1}-${dueDate.getFullYear()}`;
+                reminders.push(`🔔 បន្ទប់ <b>${roomNum}</b> ត្រូវครบកំណត់បង់ប្រាក់ថ្ងៃនេះ (${formattedDueDate})!`);
+            } else if (diffDays < 0) {
+                let formattedDueDate = `${dueDate.getDate()}-${dueDate.getMonth() + 1}-${dueDate.getFullYear()}`;
+                reminders.push(`🚨 បន្ទប់ <b>${roomNum}</b> បានហួសកាលកំណត់បង់ប្រាក់ចាប់តាំងពីថ្ងៃទី ${formattedDueDate} រួចហើយ!`);
+            }
+        }
+
+        if (reminders.length > 0) {
+            notificationArea.innerHTML = `<div class="notification-box">📢 <b>ការជូនដំណឹងការបង់ប្រាក់បន្ទប់:</b><br>` + reminders.join('<br>') + `</div>`;
+        } else {
+            notificationArea.innerHTML = '';
+        }
     }
 
     async function saveDataToCloud(dataType, payloadData) {
+        if (!currentUser || !currentUser.username) return;
         await callAPI({
             action: "saveData",
             username: currentUser.username,
@@ -452,6 +572,32 @@
         currentSelectedRoom = r;
         renderRoomsGrid();
         document.getElementById('formTitle').innerText = `បញ្ចូលទិន្នន័យ: បន្ទប់ ${r}`;
+        
+        let roomRecords = historyList.filter(item => item && item.room === r && item.date);
+        if (roomRecords.length > 0) {
+            roomRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+            let latestRecord = roomRecords[0];
+
+            let lastWaterVal = "";
+            if (latestRecord.waterCur !== undefined && latestRecord.waterCur !== "") {
+                lastWaterVal = latestRecord.waterCur;
+            } else if (latestRecord.waterPrevious !== undefined && latestRecord.waterConsumption !== undefined) {
+                lastWaterVal = Number(latestRecord.waterPrevious) + Number(latestRecord.waterConsumption);
+            }
+            document.getElementById('waterPrevious').value = lastWaterVal;
+
+            let lastElecVal = "";
+            if (latestRecord.elecCur !== undefined && latestRecord.elecCur !== "") {
+                lastElecVal = latestRecord.elecCur;
+            } else if (latestRecord.elecPrevious !== undefined && latestRecord.elecConsumption !== undefined) {
+                lastElecVal = Number(latestRecord.elecPrevious) + Number(latestRecord.elecConsumption);
+            }
+            document.getElementById('elecPrevious').value = lastElecVal;
+        } else {
+            document.getElementById('waterPrevious').value = '';
+            document.getElementById('elecPrevious').value = '';
+        }
+
         calculateInvoice();
     }
 
@@ -504,7 +650,7 @@
                         <tr>
                             <th>លេខថ្មី / Current:</th>
                             <th>លេខចាស់ / Previous:</th>
-                            <th>ចំណុចប្រើប្រាស់ / Consumption:</th>
+                            <th>ចំនួនប្រើប្រាស់ / Consumption:</th>
                             <th>តម្លៃសរុប / Value:</th>
                         </tr>
                     </thead>
@@ -543,7 +689,7 @@
                         <tr>
                             <th>លេខថ្មី / Current:</th>
                             <th>លេខចាស់ / Previous:</th>
-                            <th>ចំណុចប្រើប្រាស់ / Consumption:</th>
+                            <th>ចំនួនប្រើប្រាស់ / Consumption:</th>
                             <th>តម្លៃសរុប / Value:</th>
                         </tr>
                     </thead>
@@ -574,7 +720,16 @@
         }
 
         let invoiceDateVal = document.getElementById('invoiceDate').value;
-        document.getElementById('invPrintFor').innerText = invoiceDateVal ? invoiceDateVal : '.....................';
+        if (invoiceDateVal) {
+            let pParts = invoiceDateVal.split('-');
+            if (pParts.length === 3) {
+                document.getElementById('invPrintFor').innerText = `${pParts[2]} - ${pParts[1]} - ${pParts[0]}`;
+            } else {
+                document.getElementById('invPrintFor').innerText = invoiceDateVal;
+            }
+        } else {
+            document.getElementById('invPrintFor').innerText = '.....................';
+        }
         document.getElementById('invPrintRoom').innerText = currentSelectedRoom || '-';
         document.getElementById('invPrintRoomPrice').innerText = roomPrice;
 
@@ -588,17 +743,58 @@
     }
 
     async function saveAndGenerateInvoice() {
+        if (!currentSelectedRoom || currentSelectedRoom === "undefined") {
+            alert("សូមជ្រើសរើសបន្ទប់ឱ្យបានត្រឹមត្រូវសិន!");
+            return;
+        }
+
+        let waterIsFlat = document.getElementById('waterFlatRateCheck').checked;
+        let waterCur = parseFloat(document.getElementById('waterCurrent').value) || 0;
+        let waterPrev = parseFloat(document.getElementById('waterPrevious').value) || 0;
+        let waterFlat = parseFloat(document.getElementById('waterFlatAmount').value) || 0;
+        let waterUnit = parseFloat(document.getElementById('waterUnitPrice').value) || 2500;
+        let waterCons = waterIsFlat ? 0 : Math.max(0, waterCur - waterPrev);
+        let waterRiel = waterIsFlat ? waterFlat : (waterCons * waterUnit);
+
+        let elecIsFlat = document.getElementById('elecFlatRateCheck').checked;
+        let elecCur = parseFloat(document.getElementById('elecCurrent').value) || 0;
+        let elecPrev = parseFloat(document.getElementById('elecPrevious').value) || 0;
+        let elecFlat = parseFloat(document.getElementById('elecFlatAmount').value) || 0;
+        let elecUnit = parseFloat(document.getElementById('elecUnitPrice').value) || 1500;
+        let elecCons = elecIsFlat ? 0 : Math.max(0, elecCur - elecPrev);
+        let elecRiel = elecIsFlat ? elecFlat : (elecCons * elecUnit);
+
         let record = {
-            id: Date.now(),
+            id: editingRecordId ? editingRecordId : Date.now(),
             room: currentSelectedRoom,
             date: document.getElementById('invoiceDate').value,
-            roomPrice: parseFloat(document.getElementById('roomPrice').value),
-            waterIsFlat: document.getElementById('waterFlatRateCheck').checked,
-            waterCons: document.getElementById('waterFlatRateCheck').checked ? 0 : (parseFloat(document.getElementById('waterConsumption').value) || 0),
-            elecIsFlat: document.getElementById('elecFlatRateCheck').checked,
-            elecCons: document.getElementById('elecFlatRateCheck').checked ? 0 : (parseFloat(document.getElementById('elecConsumption').value) || 0),
+            roomPrice: parseFloat(document.getElementById('roomPrice').value) || 0,
+            waterIsFlat: waterIsFlat,
+            waterCur: waterCur,
+            waterPrev: waterPrev,
+            waterFlatAmount: waterFlat,
+            waterConsumption: waterCons,
+            waterRiel: waterRiel,
+            elecIsFlat: elecIsFlat,
+            elecCur: elecCur,
+            elecPrev: elecPrev,
+            elecFlatAmount: elecFlat,
+            elecConsumption: elecCons,
+            elecRiel: elecRiel,
+            trashFee: parseFloat(document.getElementById('trashFee').value) || 0,
+            internetFee: parseFloat(document.getElementById('internetFee').value) || 0,
+            parkingFee: parseFloat(document.getElementById('parkingFee').value) || 0,
+            otherFee: parseFloat(document.getElementById('otherFee').value) || 0,
             grandTotal: parseFloat(document.getElementById('invPrintGrandTotal').innerText) || 0
         };
+
+        if (editingRecordId) {
+            historyList = historyList.filter(h => h.id !== editingRecordId);
+            editingRecordId = null;
+            document.getElementById('cancelEditBtn').style.display = 'none';
+            document.getElementById('saveBtnText').innerText = "💾 រក្សាទុក និងបង្កើតវិក័យបត្រ";
+        }
+
         historyList.unshift(record);
         await saveDataToCloud("history", historyList);
         alert("បានរក្សាទុកទៅ Google Sheets ជោគជ័យ!");
@@ -606,14 +802,39 @@
         renderHistory();
         renderMonthlySummary();
         renderYearlySummary();
+        checkPaymentReminders();
+    }
+
+    function cancelEditing() {
+        editingRecordId = null;
+        document.getElementById('cancelEditBtn').style.display = 'none';
+        document.getElementById('saveBtnText').innerText = "💾 រក្សាទុក និងបង្កើតវិក័យបត្រ";
+        setDefaultDate();
+        document.getElementById('roomPrice').value = 90;
+        document.getElementById('waterFlatRateCheck').checked = false;
+        document.getElementById('elecFlatRateCheck').checked = false;
+        toggleWaterFlatRate();
+        toggleElecFlatRate();
+        document.getElementById('waterCurrent').value = '';
+        selectRoom(currentSelectedRoom);
+        document.getElementById('waterFlatAmount').value = 20000;
+        document.getElementById('elecCurrent').value = '';
+        document.getElementById('elecFlatAmount').value = 100000;
+        document.getElementById('trashFee').value = 0;
+        document.getElementById('internetFee').value = 0;
+        document.getElementById('parkingFee').value = 0;
+        document.getElementById('otherFee').value = 0;
+        calculateInvoice();
     }
 
     function renderHistory() {
         let c = document.getElementById('historyContainer');
+        historyList = historyList.filter(item => item && item.room && item.room !== "undefined" && item.room !== "null");
+        
         c.innerHTML = historyList.length === 0 ? "<div style='text-align: center; color: var(--text-secondary); padding: 20px;'>មិនទាន់មានប្រវត្តិទិន្នន័យនៅឡើយ</div>" : "";
         historyList.forEach(item => {
-            let waterStr = item.waterIsFlat ? "ទឹក: គិតប្រចាំខែ" : `ទឹក: ${item.waterCons || 0}m³`;
-            let elecStr = item.elecIsFlat ? "អគ្គិសនី: គិតប្រចាំខែ" : `អគ្គិសនី: ${item.elecCons || 0}kWh`;
+            let waterStr = item.waterIsFlat ? "ទឹក: គិតប្រចាំខែ" : `ទឹក: ${(item.waterConsumption !== undefined ? item.waterConsumption : (item.waterCur !== undefined ? item.waterCur - item.waterPrev : item.waterCons)) || 0}m³`;
+            let elecStr = item.elecIsFlat ? "អគ្គិសនី: គិតប្រចាំខែ" : `អគ្គិសនី: ${(item.elecConsumption !== undefined ? item.elecConsumption : (item.elecCur !== undefined ? item.elecCur - item.elecPrev : item.elecCons)) || 0}kWh`;
             
             c.innerHTML += `
                 <div class="history-item">
@@ -639,7 +860,7 @@
         let yearsSet = new Set();
 
         historyList.forEach(item => {
-            if (item.date) {
+            if (item.date && item.room && item.room !== "undefined") {
                 let parts = item.date.split('-');
                 if (parts.length >= 2) {
                     monthsSet.add(`${parts[0]}-${parts[1]}`);
@@ -686,7 +907,7 @@
         }
 
         const selectedMonth = monthSelect.value;
-        const filtered = historyList.filter(item => item.date && item.date.startsWith(selectedMonth));
+        const filtered = historyList.filter(item => item.date && item.date.startsWith(selectedMonth) && item.room && item.room !== "undefined");
 
         if (filtered.length === 0) {
             container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 20px;">គ្មានទិន្នន័យក្នុងខែនេះទេ</div>';
@@ -694,18 +915,38 @@
         }
 
         let totalMonthAmount = 0;
+        let totalWaterRiel = 0;
+        let totalWaterConsumption = 0;
+        let totalElecRiel = 0;
+        let totalElecConsumption = 0;
         let paidRooms = [];
 
         filtered.forEach(item => {
             totalMonthAmount += item.grandTotal || 0;
+            
+            let wRiel = item.waterRiel !== undefined ? item.waterRiel : (item.waterIsFlat ? (item.waterFlatAmount || 0) : ((item.waterConsumption || (item.waterCur - item.waterPrev) || 0) * 2500));
+            let wCons = item.waterIsFlat ? 0 : (item.waterConsumption !== undefined ? item.waterConsumption : ((item.waterCur || 0) - (item.waterPrev || 0)));
+            totalWaterRiel += wRiel;
+            totalWaterConsumption += wCons;
+
+            let eRiel = item.elecRiel !== undefined ? item.elecRiel : (item.elecIsFlat ? (item.elecFlatAmount || 0) : ((item.elecConsumption || (item.elecCur - item.elecPrev) || 0) * 1500));
+            let eCons = item.elecIsFlat ? 0 : (item.elecConsumption !== undefined ? item.elecConsumption : ((item.elecCur || 0) - (item.elecPrev || 0)));
+            totalElecRiel += eRiel;
+            totalElecConsumption += eCons;
+
             paidRooms.push(`បន្ទប់ ${item.room} ($${(item.grandTotal || 0).toFixed(2)})`);
         });
+
+        let totalWaterDollar = totalWaterRiel / exchangeRate;
+        let totalElecDollar = totalElecRiel / exchangeRate;
 
         container.innerHTML = `
             <div class="summary-card">
                 <h4 style="color: var(--primary); margin-bottom: 8px;">📊 សរុបប្រចាំខែ: ${selectedMonth}</h4>
                 <p><b>ទឹកប្រាក់សរុបរួម:</b> <span style="color: var(--success); font-size: 16px;">$${totalMonthAmount.toFixed(2)}</span></p>
-                <p style="margin-top: 6px;"><b>បន្ទប់ដែលបានបង់ប្រាក់រួច (${filtered.length} បន្ទប់):</b></p>
+                <p style="margin-top: 6px;"><b>💧 ទឹកសរុប:</b> ${totalWaterRiel.toLocaleString()} រៀល ($${totalWaterDollar.toFixed(2)}) | <b>បរិមាណទឹកប្រើប្រាស់សរុប:</b> ${totalWaterConsumption} m³</p>
+                <p style="margin-top: 4px;"><b>⚡ អគ្គិសនីសរុប:</b> ${totalElecRiel.toLocaleString()} រៀល ($${totalElecDollar.toFixed(2)}) | <b>បរិមាណអគ្គិសនីប្រើប្រាស់សរុប:</b> ${totalElecConsumption} kWh</p>
+                <p style="margin-top: 8px;"><b>បន្ទប់ដែលបានបង់ប្រាក់រួច (${filtered.length} បន្ទប់):</b></p>
                 <div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px;">
                     ${paidRooms.map(r => `<span style="background: rgba(52, 199, 89, 0.1); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 12px; border: 1px solid rgba(52, 199, 89, 0.3); font-weight: 600;">${r}</span>`).join('')}
                 </div>
@@ -724,7 +965,7 @@
         }
 
         const selectedYear = yearSelect.value;
-        const filtered = historyList.filter(item => item.date && item.date.startsWith(selectedYear));
+        const filtered = historyList.filter(item => item.date && item.date.startsWith(selectedYear) && item.room && item.room !== "undefined");
 
         if (filtered.length === 0) {
             container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 20px;">គ្មានទិន្នន័យក្នុងឆ្នាំនេះទេ</div>';
@@ -738,13 +979,31 @@
         }
 
         let totalYearAmount = 0;
+        let totalYearWaterRiel = 0;
+        let totalYearWaterCons = 0;
+        let totalYearElecRiel = 0;
+        let totalYearElecCons = 0;
+
         filtered.forEach(item => {
             let mKey = item.date.substring(0, 7);
             if (monthlyTotals[mKey] !== undefined) {
                 monthlyTotals[mKey] += item.grandTotal || 0;
             }
             totalYearAmount += item.grandTotal || 0;
+
+            let wRiel = item.waterRiel !== undefined ? item.waterRiel : (item.waterIsFlat ? (item.waterFlatAmount || 0) : ((item.waterConsumption || (item.waterCur - item.waterPrev) || 0) * 2500));
+            let wCons = item.waterIsFlat ? 0 : (item.waterConsumption !== undefined ? item.waterConsumption : ((item.waterCur || 0) - (item.waterPrev || 0)));
+            totalYearWaterRiel += wRiel;
+            totalYearWaterCons += wCons;
+
+            let eRiel = item.elecRiel !== undefined ? item.elecRiel : (item.elecIsFlat ? (item.elecFlatAmount || 0) : ((item.elecConsumption || (item.elecCur - item.elecPrev) || 0) * 1500));
+            let eCons = item.elecIsFlat ? 0 : (item.elecConsumption !== undefined ? item.elecConsumption : ((item.elecCur || 0) - (item.elecPrev || 0)));
+            totalYearElecRiel += eRiel;
+            totalYearElecCons += eCons;
         });
+
+        let totalYearWaterDollar = totalYearWaterRiel / exchangeRate;
+        let totalYearElecDollar = totalYearElecRiel / exchangeRate;
 
         let monthsHtml = '';
         for (let mKey in monthlyTotals) {
@@ -762,7 +1021,9 @@
         container.innerHTML = `
             <div class="summary-card">
                 <h4 style="color: var(--primary); margin-bottom: 8px;">📈 សរុបប្រចាំឆ្នាំ: ${selectedYear}</h4>
-                <p style="margin-bottom: 10px;"><b>ចំណូលសរុបប្រចាំឆ្នាំ:</b> <span style="color: var(--success); font-size: 16px;">$${totalYearAmount.toFixed(2)}</span></p>
+                <p style="margin-bottom: 6px;"><b>ចំណូលសរុបប្រចាំឆ្នាំ:</b> <span style="color: var(--success); font-size: 16px;">$${totalYearAmount.toFixed(2)}</span></p>
+                <p style="margin-bottom: 6px;"><b>💧 ទឹកសរុបប្រចាំឆ្នាំ:</b> ${totalYearWaterRiel.toLocaleString()} រៀល ($${totalYearWaterDollar.toFixed(2)}) | <b>បរិមាណទឹកប្រើប្រាស់សរុប:</b> ${totalYearWaterCons} m³</p>
+                <p style="margin-bottom: 10px;"><b>⚡ អគ្គិសនីសរុបប្រចាំឆ្នាំ:</b> ${totalYearElecRiel.toLocaleString()} រៀល ($${totalYearElecDollar.toFixed(2)}) | <b>បរិមាណអគ្គិសនីប្រើប្រាស់សរុប:</b> ${totalYearElecCons} kWh</p>
                 <div style="background: var(--input-bg); padding: 10px 14px; border-radius: 10px;">
                     <div style="font-weight: 600; margin-bottom: 6px; font-size: 12px; color: var(--text-secondary);">ការបែងចែកតាមខែនីមួយៗ:</div>
                     ${monthsHtml}
@@ -774,16 +1035,39 @@
     function editRecord(id) {
         const item = historyList.find(h => h.id === id);
         if (item) {
+            editingRecordId = item.id;
+            document.getElementById('cancelEditBtn').style.display = 'block';
+            document.getElementById('saveBtnText').innerText = "💾 កែសម្រួលរួចរាល់";
+
             selectRoom(item.room);
-            document.getElementById('invoiceDate').value = item.date;
-            document.getElementById('roomPrice').value = item.roomPrice;
-            document.getElementById('waterFlatRateCheck').checked = item.waterIsFlat;
-            document.getElementById('elecFlatRateCheck').checked = item.elecIsFlat;
+            document.getElementById('invoiceDate').value = item.date || new Date().toISOString().split('T')[0];
+            document.getElementById('roomPrice').value = item.roomPrice || 0;
+            
+            document.getElementById('waterFlatRateCheck').checked = !!item.waterIsFlat;
             toggleWaterFlatRate();
+            if (item.waterIsFlat) {
+                document.getElementById('waterFlatAmount').value = item.waterFlatAmount || 20000;
+            } else {
+                document.getElementById('waterPrevious').value = item.waterPrev !== undefined ? item.waterPrev : '';
+                document.getElementById('waterCurrent').value = item.waterCur !== undefined ? item.waterCur : '';
+            }
+
+            document.getElementById('elecFlatRateCheck').checked = !!item.elecIsFlat;
             toggleElecFlatRate();
+            if (item.elecIsFlat) {
+                document.getElementById('elecFlatAmount').value = item.elecFlatAmount || 100000;
+            } else {
+                document.getElementById('elecPrevious').value = item.elecPrev !== undefined ? item.elecPrev : '';
+                document.getElementById('elecCurrent').value = item.elecCur !== undefined ? item.elecCur : '';
+            }
+
+            document.getElementById('trashFee').value = item.trashFee || 0;
+            document.getElementById('internetFee').value = item.internetFee || 0;
+            document.getElementById('parkingFee').value = item.parkingFee || 0;
+            document.getElementById('otherFee').value = item.otherFee || 0;
+
             calculateInvoice();
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            deleteRecord(id, false);
         }
     }
 
@@ -795,6 +1079,7 @@
         renderHistory();
         renderMonthlySummary();
         renderYearlySummary();
+        checkPaymentReminders();
     }
 
     function switchTab(t) {
