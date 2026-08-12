@@ -206,7 +206,6 @@
         <div id="invWaterSectionContainer"></div>
         <div id="invElecSectionContainer"></div>
         
-        <!-- Additional Fees Receipt Container -->
         <div id="invExtrasContainer" style="font-size: 12px; margin-bottom: 8px; border-top: 1px dashed #000; padding-top: 4px; display: none;"></div>
 
         <div class="invoice-totals" style="line-height: 1.6;">
@@ -595,37 +594,216 @@
             date: document.getElementById('invoiceDate').value,
             roomPrice: parseFloat(document.getElementById('roomPrice').value),
             waterIsFlat: document.getElementById('waterFlatRateCheck').checked,
+            waterCons: document.getElementById('waterFlatRateCheck').checked ? 0 : (parseFloat(document.getElementById('waterConsumption').value) || 0),
             elecIsFlat: document.getElementById('elecFlatRateCheck').checked,
-            trashFee: parseFloat(document.getElementById('trashFee').value) || 0,
-            internetFee: parseFloat(document.getElementById('internetFee').value) || 0,
-            parkingFee: parseFloat(document.getElementById('parkingFee').value) || 0,
-            otherFee: parseFloat(document.getElementById('otherFee').value) || 0,
+            elecCons: document.getElementById('elecFlatRateCheck').checked ? 0 : (parseFloat(document.getElementById('elecConsumption').value) || 0),
             grandTotal: parseFloat(document.getElementById('invPrintGrandTotal').innerText) || 0
         };
         historyList.unshift(record);
         await saveDataToCloud("history", historyList);
         alert("បានរក្សាទុកទៅ Google Sheets ជោគជ័យ!");
+        initFilterOptions();
         renderHistory();
+        renderMonthlySummary();
+        renderYearlySummary();
     }
 
     function renderHistory() {
         let c = document.getElementById('historyContainer');
-        c.innerHTML = historyList.length === 0 ? "មិនមានទិន្នន័យ" : "";
+        c.innerHTML = historyList.length === 0 ? "<div style='text-align: center; color: var(--text-secondary); padding: 20px;'>មិនទាន់មានប្រវត្តិទិន្នន័យនៅឡើយ</div>" : "";
         historyList.forEach(item => {
-            c.innerHTML += `<div class="history-item"><div><b>បន្ទប់ ${item.room}</b><br><small>${item.date}</small></div><div>$${(item.grandTotal || 0).toFixed(2)}</div></div>`;
+            let waterStr = item.waterIsFlat ? "ទឹក: គិតប្រចាំខែ" : `ទឹក: ${item.waterCons || 0}m³`;
+            let elecStr = item.elecIsFlat ? "អគ្គិសនី: គិតប្រចាំខែ" : `អគ្គិសនី: ${item.elecCons || 0}kWh`;
+            
+            c.innerHTML += `
+                <div class="history-item">
+                    <div>
+                        <b>បន្ទប់ ${item.room}</b><br>
+                        <span style="color: var(--text-secondary); font-size: 11px;">កាលបរិច្ឆេទ: ${item.date}</span>
+                    </div>
+                    <div style="background: rgba(0, 113, 227, 0.05); padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; border: 1px solid rgba(0, 113, 227, 0.2); text-align: center;">
+                        💧 ${waterStr} | ⚡ ${elecStr}<br>
+                        💰 សរុបរួម: $${(item.grandTotal || 0).toFixed(2)}
+                    </div>
+                    <div class="action-btns">
+                        <button class="btn-sm btn-edit" onclick="editRecord(${item.id})">កែសម្រួល</button>
+                        <button class="btn-sm btn-delete" onclick="deleteRecord(${item.id})">លុប</button>
+                    </div>
+                </div>
+            `;
         });
+    }
+
+    function initFilterOptions() {
+        let monthsSet = new Set();
+        let yearsSet = new Set();
+
+        historyList.forEach(item => {
+            if (item.date) {
+                let parts = item.date.split('-');
+                if (parts.length >= 2) {
+                    monthsSet.add(`${parts[0]}-${parts[1]}`);
+                    yearsSet.add(parts[0]);
+                }
+            }
+        });
+
+        const monthSelect = document.getElementById('monthSelect');
+        const yearSelect = document.getElementById('yearSelect');
+        
+        let currentMonthVal = monthSelect.value;
+        let currentYearVal = yearSelect.value;
+
+        monthSelect.innerHTML = '';
+        yearSelect.innerHTML = '';
+
+        Array.from(monthsSet).sort().reverse().forEach(m => {
+            let opt = document.createElement('option');
+            opt.value = m;
+            opt.innerText = `ខែ ${m}`;
+            monthSelect.appendChild(opt);
+        });
+
+        Array.from(yearsSet).sort().reverse().forEach(y => {
+            let opt = document.createElement('option');
+            opt.value = y;
+            opt.innerText = `ឆ្នាំ ${y}`;
+            yearSelect.appendChild(opt);
+        });
+
+        if (currentMonthVal && monthsSet.has(currentMonthVal)) monthSelect.value = currentMonthVal;
+        if (currentYearVal && yearsSet.has(currentYearVal)) yearSelect.value = currentYearVal;
+    }
+
+    function renderMonthlySummary() {
+        const container = document.getElementById('monthlySummaryContainer');
+        const monthSelect = document.getElementById('monthSelect');
+        
+        container.innerHTML = '';
+        if (!monthSelect.value || historyList.length === 0) {
+            container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 20px;">មិនទាន់មានទិន្នន័យសម្រាប់ខែនេះ</div>';
+            return;
+        }
+
+        const selectedMonth = monthSelect.value;
+        const filtered = historyList.filter(item => item.date && item.date.startsWith(selectedMonth));
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 20px;">គ្មានទិន្នន័យក្នុងខែនេះទេ</div>';
+            return;
+        }
+
+        let totalMonthAmount = 0;
+        let paidRooms = [];
+
+        filtered.forEach(item => {
+            totalMonthAmount += item.grandTotal || 0;
+            paidRooms.push(`បន្ទប់ ${item.room} ($${(item.grandTotal || 0).toFixed(2)})`);
+        });
+
+        container.innerHTML = `
+            <div class="summary-card">
+                <h4 style="color: var(--primary); margin-bottom: 8px;">📊 សរុបប្រចាំខែ: ${selectedMonth}</h4>
+                <p><b>ទឹកប្រាក់សរុបរួម:</b> <span style="color: var(--success); font-size: 16px;">$${totalMonthAmount.toFixed(2)}</span></p>
+                <p style="margin-top: 6px;"><b>បន្ទប់ដែលបានបង់ប្រាក់រួច (${filtered.length} បន្ទប់):</b></p>
+                <div style="margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px;">
+                    ${paidRooms.map(r => `<span style="background: rgba(52, 199, 89, 0.1); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 12px; border: 1px solid rgba(52, 199, 89, 0.3); font-weight: 600;">${r}</span>`).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderYearlySummary() {
+        const container = document.getElementById('yearlySummaryContainer');
+        const yearSelect = document.getElementById('yearSelect');
+        
+        container.innerHTML = '';
+        if (!yearSelect.value || historyList.length === 0) {
+            container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 20px;">មិនទាន់មានទិន្នន័យសម្រាប់ឆ្នាំនេះ</div>';
+            return;
+        }
+
+        const selectedYear = yearSelect.value;
+        const filtered = historyList.filter(item => item.date && item.date.startsWith(selectedYear));
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); font-size: 13px; padding: 20px;">គ្មានទិន្នន័យក្នុងឆ្នាំនេះទេ</div>';
+            return;
+        }
+
+        let monthlyTotals = {};
+        for (let i = 1; i <= 12; i++) {
+            let mStr = i < 10 ? '0' + i : '' + i;
+            monthlyTotals[`${selectedYear}-${mStr}`] = 0;
+        }
+
+        let totalYearAmount = 0;
+        filtered.forEach(item => {
+            let mKey = item.date.substring(0, 7);
+            if (monthlyTotals[mKey] !== undefined) {
+                monthlyTotals[mKey] += item.grandTotal || 0;
+            }
+            totalYearAmount += item.grandTotal || 0;
+        });
+
+        let monthsHtml = '';
+        for (let mKey in monthlyTotals) {
+            let amt = monthlyTotals[mKey];
+            if (amt > 0) {
+                monthsHtml += `
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border-color); font-size: 13px;">
+                        <span><b>ខែ ${mKey}:</b></span>
+                        <span style="color: var(--primary); font-weight: 600;">$${amt.toFixed(2)}</span>
+                    </div>
+                `;
+            }
+        }
+
+        container.innerHTML = `
+            <div class="summary-card">
+                <h4 style="color: var(--primary); margin-bottom: 8px;">📈 សរុបប្រចាំឆ្នាំ: ${selectedYear}</h4>
+                <p style="margin-bottom: 10px;"><b>ចំណូលសរុបប្រចាំឆ្នាំ:</b> <span style="color: var(--success); font-size: 16px;">$${totalYearAmount.toFixed(2)}</span></p>
+                <div style="background: var(--input-bg); padding: 10px 14px; border-radius: 10px;">
+                    <div style="font-weight: 600; margin-bottom: 6px; font-size: 12px; color: var(--text-secondary);">ការបែងចែកតាមខែនីមួយៗ:</div>
+                    ${monthsHtml}
+                </div>
+            </div>
+        `;
+    }
+
+    function editRecord(id) {
+        const item = historyList.find(h => h.id === id);
+        if (item) {
+            selectRoom(item.room);
+            document.getElementById('invoiceDate').value = item.date;
+            document.getElementById('roomPrice').value = item.roomPrice;
+            document.getElementById('waterFlatRateCheck').checked = item.waterIsFlat;
+            document.getElementById('elecFlatRateCheck').checked = item.elecIsFlat;
+            toggleWaterFlatRate();
+            toggleElecFlatRate();
+            calculateInvoice();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            deleteRecord(id, false);
+        }
+    }
+
+    async function deleteRecord(id, confirmPrompt = true) {
+        if (confirmPrompt && !confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) return;
+        historyList = historyList.filter(h => h.id !== id);
+        await saveDataToCloud("history", historyList);
+        initFilterOptions();
+        renderHistory();
+        renderMonthlySummary();
+        renderYearlySummary();
     }
 
     function switchTab(t) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         if(t=='history') { document.querySelectorAll('.tab-btn')[0].classList.add('active'); document.getElementById('tab-history').classList.add('active'); }
-        if(t=='monthly') { document.querySelectorAll('.tab-btn')[1].classList.add('active'); document.getElementById('tab-monthly').classList.add('active'); }
-        if(t=='yearly') { document.querySelectorAll('.tab-btn')[2].classList.add('active'); document.getElementById('tab-yearly').classList.add('active'); }
+        if(t=='monthly') { document.querySelectorAll('.tab-btn')[1].classList.add('active'); document.getElementById('tab-monthly').classList.add('active'); renderMonthlySummary(); }
+        if(t=='yearly') { document.querySelectorAll('.tab-btn')[2].classList.add('active'); document.getElementById('tab-yearly').classList.add('active'); renderYearlySummary(); }
     }
-    function initFilterOptions() {}
-    function renderMonthlySummary() {}
-    function renderYearlySummary() {}
     function onInvoiceDateChange() { calculateInvoice(); }
 </script>
 </body>
