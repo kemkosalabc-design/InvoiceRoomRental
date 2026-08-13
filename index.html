@@ -397,21 +397,25 @@
         checkPaymentReminders();
     }
 
-    async function editUserEmail(u) {
-        let currentEmail = userDatabase[u]?.email || "";
-        let newEmail = prompt(`បញ្ចូល Email សម្រាប់ ${u}:`, currentEmail);
-        if (newEmail !== null) {
-            await callAPI({ 
-                action: "saveUser", 
-                username: u, 
-                password: userDatabase[u].pass, 
-                role: userDatabase[u].role, 
-                email: newEmail 
-            });
+async function editUserEmail(u) {
+    let currentEmail = userDatabase[u]?.email || "";
+    let newEmail = prompt(`បញ្ចូល Email សម្រាប់ ${u}:`, currentEmail);
+    if (newEmail !== null) {
+        let res = await callAPI({ 
+            action: "saveUser", 
+            username: u, 
+            password: userDatabase[u].pass, 
+            role: userDatabase[u].role, 
+            email: newEmail 
+        });
+        if (res && res.status === "success") {
             alert("បានអាប់ដេត Email ជោគជ័យ!");
             openFounderModal();
+        } else {
+            alert("មានបញ្ហាក្នុងการរក្សាទុក Email!");
         }
     }
+}
 
     async function checkPaymentReminders() {
         let notificationArea = document.getElementById('notificationArea');
