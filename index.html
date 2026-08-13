@@ -43,23 +43,14 @@
         .form-group { margin-bottom: 14px; text-align: left; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); }
         .form-control { width: 100%; padding: 11px 14px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--input-bg); color: var(--text-color); font-size: 15px; }
-        
-        .highlight-input {
-            background-color: rgba(0, 113, 227, 0.08) !important;
-            border-color: var(--primary) !important;
-            font-weight: 700;
-            color: var(--primary) !important;
-        }
-
+        .highlight-input { background-color: rgba(0, 113, 227, 0.08) !important; border-color: var(--primary) !important; font-weight: 700; color: var(--primary) !important; }
         .grid-2 { display: grid; grid-template-columns: 1fr; gap: 12px; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .grid-extras { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         .btn-primary { background: var(--primary); color: white; border: none; width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 15px; }
         .btn-success { background: var(--success); color: white; border: none; padding: 8px 12px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 13px; }
-        
         .action-button-group { display: flex; gap: 10px; }
         .btn-cancel-edit { background: var(--danger); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 15px; display: none; width: 150px; text-align: center; }
-
         .tabs-container { display: flex; gap: 8px; margin-bottom: 16px; background: var(--alt-bg); padding: 4px; border-radius: 20px; border: 1px solid var(--border-color); }
         .tab-btn { flex: 1; padding: 10px; font-size: 13px; font-weight: 600; border: none; background: transparent; color: var(--text-secondary); border-radius: 16px; cursor: pointer; text-align: center; }
         .tab-btn.active { background: var(--tab-active-bg); color: var(--tab-active-color); font-weight: 700; }
@@ -68,7 +59,6 @@
         .filter-box { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; font-size: 13px; }
         .filter-box select { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); }
         .summary-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 14px; margin-bottom: 10px; font-size: 13px; }
-        
         .invoice-preview { background: #ffffff; color: #000000; padding: 24px; border-radius: 8px; border: 1px solid #000; margin-top: 24px; }
         .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 12px; }
         .invoice-title-center { text-align: center; flex-grow: 1; }
@@ -78,44 +68,23 @@
         .utility-row { font-size: 12px; font-weight: bold; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
         .invoice-totals { font-size: 12px; font-weight: bold; text-align: right; border-top: 1px solid #000; padding-top: 8px; }
         .grand-total-text { font-size: 16.8px; color: #0071e3; border-bottom: 2px double #0071e3; }
-
         .history-item { background: var(--card-bg); border: 1px solid var(--border-color); padding: 14px 16px; border-radius: 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
         .action-btns { display: flex; gap: 8px; }
         .btn-sm { padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; }
         .btn-edit { background: var(--warning); color: white; }
         .btn-delete { background: var(--danger); color: white; }
         .sync-status { font-size: 11px; color: var(--text-secondary); text-align: center; margin-top: 16px; }
-
-        /* Calendar Modal Styles */
         .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-weight: 600; font-size: 15px; }
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         .cal-day-cell { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 4px; text-align: center; font-size: 12px; min-height: 65px; display: flex; flex-direction: column; justify-content: space-between; }
         .cal-day-num { font-weight: 700; margin-bottom: 4px; }
         .cal-rooms-list { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; }
         .cal-room-tag { background: var(--success); color: white; font-size: 9px; padding: 1px 4px; border-radius: 4px; font-weight: 600; }
-
-        @page {
-            size: auto;
-            margin: 0mm;
-        }
-
+        @page { size: auto; margin: 0mm; }
         @media print {
-            body * {
-                visibility: hidden;
-            }
-            #printable-invoice, #printable-invoice * {
-                visibility: visible;
-            }
-            #printable-invoice {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 20px;
-                border: none;
-                box-shadow: none;
-            }
+            body * { visibility: hidden; }
+            #printable-invoice, #printable-invoice * { visibility: visible; }
+            #printable-invoice { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; border: none; box-shadow: none; }
         }
     </style>
 </head>
@@ -146,7 +115,7 @@
         <div style="overflow-x: auto;">
             <table class="user-table">
                 <thead>
-                    <tr><th>Username</th><th>Password</th><th>Role</th><th>សកម្មភាព</th></tr>
+                    <tr><th>Username</th><th>Password</th><th>Role</th><th>Email</th><th>សកម្មភាព</th></tr>
                 </thead>
                 <tbody id="founderUserTableBody"></tbody>
             </table>
@@ -252,7 +221,6 @@
             <div><label style="font-size: 11px;">🏷️ ផ្សេងៗ (រៀល)</label><input type="number" id="otherFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
         </div>
 
-        <!-- Added Live Total Display Box here -->
         <div class="form-group" style="background: rgba(0, 113, 227, 0.08); border: 1px solid var(--primary); padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
             <span style="font-size: 14px; font-weight: 700; color: var(--primary);">💰 សរុបទឹកប្រាក់ (Grand Total):</span>
             <span id="liveGrandTotalDisplay" style="font-size: 18px; font-weight: 700; color: var(--primary);">0.00 $</span>
@@ -429,7 +397,23 @@
         checkPaymentReminders();
     }
 
-    function checkPaymentReminders() {
+    async function editUserEmail(u) {
+        let currentEmail = userDatabase[u]?.email || "";
+        let newEmail = prompt(`បញ្ចូល Email សម្រាប់ ${u}:`, currentEmail);
+        if (newEmail !== null) {
+            await callAPI({ 
+                action: "saveUser", 
+                username: u, 
+                password: userDatabase[u].pass, 
+                role: userDatabase[u].role, 
+                email: newEmail 
+            });
+            alert("បានអាប់ដេត Email ជោគជ័យ!");
+            openFounderModal();
+        }
+    }
+
+    async function checkPaymentReminders() {
         let notificationArea = document.getElementById('notificationArea');
         if (!notificationArea) return;
 
@@ -460,6 +444,17 @@
             if (diffDays === 2) {
                 let formattedDueDate = `${dueDate.getDate()}-${dueDate.getMonth() + 1}-${dueDate.getFullYear()}`;
                 reminders.push(`⚠️ បន្ទប់ <b>${roomNum}</b> ត្រូវដល់កំណត់បង់ប្រាក់ក្នុងរយៈពេល ២ថ្ងៃទៀត (ថ្ងៃទី ${formattedDueDate})`);
+                
+                // ផ្ញើ Email ស្វ័យប្រវត្តិប្រសិនបើមាន Email
+                let userEmail = userDatabase[currentUser.username]?.email;
+                if (userEmail) {
+                    await callAPI({ 
+                        action: "sendEmail", 
+                        email: userEmail, 
+                        room: roomNum, 
+                        dueDate: dueDate.toISOString().split('T')[0] 
+                    });
+                }
             } else if (diffDays === 0) {
                 let formattedDueDate = `${dueDate.getDate()}-${dueDate.getMonth() + 1}-${dueDate.getFullYear()}`;
                 reminders.push(`🔔 បន្ទប់ <b>${roomNum}</b> ត្រូវครบកំណត់បង់ប្រាក់ថ្ងៃនេះ (${formattedDueDate})!`);
@@ -492,10 +487,17 @@
         tbody.innerHTML = '';
         for (let u in userDatabase) {
             let info = userDatabase[u];
-            tbody.innerHTML += `<tr><td><b>${u}</b></td><td>${info.pass}</td><td>${info.role}</td><td>
-                <button class="btn-sm btn-edit" onclick="editUser('${u}')">កែ</button>
-                ${u !== 'admin' ? `<button class="btn-sm btn-delete" onclick="delUser('${u}')">លុប</button>` : ''}
-            </td></tr>`;
+            tbody.innerHTML += `<tr>
+                <td><b>${u}</b></td>
+                <td>${info.pass}</td>
+                <td>${info.role}</td>
+                <td>${info.email || ''}</td>
+                <td>
+                    <button class="btn-sm btn-edit" onclick="editUser('${u}')">កែ</button>
+                    <button class="btn-sm btn-success" onclick="editUserEmail('${u}')">Email</button>
+                    ${u !== 'admin' ? `<button class="btn-sm btn-delete" onclick="delUser('${u}')">លុប</button>` : ''}
+                </td>
+            </tr>`;
         }
         document.getElementById('founderModal').style.display = 'flex';
     }
@@ -506,7 +508,8 @@
         if (u) {
             let p = prompt("Password:");
             if (p) {
-                await callAPI({ action: "saveUser", username: u, password: p, role: "user" });
+                let email = prompt("Email (អាចទុកទំនេរ):") || "";
+                await callAPI({ action: "saveUser", username: u, password: p, role: "user", email: email });
                 openFounderModal();
             }
         }
@@ -514,7 +517,7 @@
     async function editUser(u) {
         let p = prompt(`Password ថ្មីសម្រាប់ ${u}:`);
         if (p) {
-            await callAPI({ action: "saveUser", username: u, password: p, role: userDatabase[u].role });
+            await callAPI({ action: "saveUser", username: u, password: p, role: userDatabase[u].role, email: userDatabase[u].email || "" });
             openFounderModal();
         }
     }
@@ -773,7 +776,6 @@
         document.getElementById('invPrintUtilityTotalDollar').innerText = totalUtilityDollar.toFixed(2);
         document.getElementById('invPrintGrandTotal').innerText = grandTotal.toFixed(2);
 
-        // Update Live Grand Total Display Box
         document.getElementById('liveGrandTotalDisplay').innerText = grandTotal.toFixed(2) + " $";
     }
 
@@ -1067,7 +1069,6 @@
         `;
     }
 
-    // Payment Calendar Modal Logic
     function openPaymentCalendarModal() {
         currentCalDate = new Date();
         renderPaymentCalendar();
@@ -1093,7 +1094,6 @@
         const khmerMonths = ["មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"];
         titleEl.innerText = `ខែ ${khmerMonths[month]} ឆ្នាំ ${year}`;
 
-        // Map due dates to rooms for this specific year and month
         let dueMap = {};
         let latestRoomRecords = {};
         historyList.forEach(item => {
