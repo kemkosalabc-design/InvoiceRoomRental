@@ -554,7 +554,6 @@
     }
 
     async function initUserData() {
-       
     if (!currentUser || !currentUser.username) return;
 
     let res = await callAPI({ action: "getData", username: currentUser.username });
@@ -566,31 +565,16 @@
             nameEn: "Guest-house", bankName: "ABA", bankAcc: "000"
         };
 
-        // 👇 បន្ថែមការទាញយកទិន្នន័យ Maintenance ពី Cloud (Google Sheet) មកដាក់ទីនេះ
+        // គ្រប់គ្រង Maintenance និង Reminders
         if (res.maintenance && Array.isArray(res.maintenance)) {
-            maintenanceList = res.maintenance.map((item, index) => ({
-                id: item.id || (Date.now() + index),
-                date: item.date,
-                desc1: item.desc1,
-                desc2: item.desc2 || "",
-                cost: parseFloat(item.cost) || 0,
-                category: item.category
-            }));
-            // រក្សាទុកចូល LocalStorage ជា Backup ផងដែរ
+            maintenanceList = res.maintenance;
             localStorage.setItem('guesthouse_maintenance_' + currentUser.username, JSON.stringify(maintenanceList));
         } else {
             loadMaintenanceFromStorage();
         }
 
-        // 👇 បន្ថែមការទាញយក Reminders ពី Cloud ផងដែរប្រសិនបើមាន
         if (res.reminders && Array.isArray(res.reminders)) {
-            remindersList = res.reminders.map((item, index) => ({
-                id: item.id || (Date.now() + index),
-                title: item.room || item.title || "",
-                date: item.date,
-                repeat: item.repeat || "Never",
-                completed: item.completed || false
-            }));
+            remindersList = res.reminders;
             localStorage.setItem('guesthouse_reminders_' + currentUser.username, JSON.stringify(remindersList));
         } else {
             loadRemindersFromStorage();
@@ -604,6 +588,7 @@
         document.getElementById('founderSettingsBtn').style.display = 'inline-block';
     }
     
+    // បញ្ជាក់៖ ត្រូវហៅ Function ទាំងអស់នេះដើម្បីបង្ហាញទិន្នន័យ
     currentSelectedRoom = rooms[0] || "01";
     setDefaultDate();
     renderHeaderInfo();
@@ -614,13 +599,36 @@
     renderMonthlySummary();
     renderYearlySummary();
     checkPaymentReminders();
+    
+    // បន្ថែមការហៅ Function នេះដើម្បីបង្ហាញការរំលឹក
+    checkRemindersOnLoad(); 
 
-    // Init tab defaults
     document.getElementById('maintDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('remDate').value = new Date().toISOString().split('T')[0];
     renderMaintenanceTable();
     renderMaintenancePieChart();
     renderRemindersList();
+}
+
+// ដាក់ Function នេះនៅខាងក្រៅ initUserData
+function checkRemindersOnLoad() {
+    let notificationArea = document.getElementById('notificationArea');
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let upcomingReminders = remindersList.filter(item => {
+        if (item.completed) return false;
+        let remDate = new Date(item.date);
+        remDate.setHours(0, 0, 0, 0);
+        return remDate <= today;
+    });
+    
+    if (upcomingReminders.length > 0) {
+        let msg = upcomingReminders.map(r => `• ${r.title} (ដល់ថ្ងៃទី ${r.date})`).join('<br>');
+        notificationArea.innerHTML += `<div class="notification-box" style="border-left: 4px solid var(--primary); background: rgba(0, 113, 227, 0.1);">
+            <b>🔔 ការរំលឹកដែលដល់កំណត់:</b><br>${msg}
+        </div>`;
+    }
 }
 
     async function editUserEmail(u) {
