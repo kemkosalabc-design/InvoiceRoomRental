@@ -489,12 +489,15 @@
         }
     }
 
-    async function fetchUsersFromSheet() {
-        let res = await callAPI({ action: "getUsers" });
-        if (res && res.status === "success") {
-            userDatabase = res.users;
-        }
+async function fetchUsersFromSheet() {
+    let res = await callAPI({ action: "getUsers" });
+    if (res && res.status === "success") {
+        userDatabase = res.users;
+        console.log("ទាញយក User បានជោគជ័យ"); // ដាក់កូដនេះដើម្បីតេស្តក្នុង Console
+    } else {
+        console.error("មិនអាចទាញយក User បានទេ");
     }
+}
 
     function checkSession() {
         const saved = sessionStorage.getItem('guesthouse_session');
