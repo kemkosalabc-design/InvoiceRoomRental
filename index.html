@@ -1543,9 +1543,12 @@
         }
 
         maintenanceList.forEach(item => {
+            // កាត់យកតែថ្ងៃខែឆ្នាំ ត្រង់នេះ
+            let formattedDate = item.date ? item.date.split('T')[0] : '';
+            
             tbody.innerHTML += `
                 <tr>
-                    <td>${item.date}</td>
+                    <td>${formattedDate}</td>
                     <td><b>${item.category}</b></td>
                     <td>${item.desc1}<br><span style="color:var(--text-secondary); font-size:11px;">${item.desc2}</span></td>
                     <td>$${(item.cost || 0).toFixed(2)}</td>
@@ -1666,11 +1669,14 @@
         }
 
         remindersList.forEach(item => {
+            // កាត់យកតែថ្ងៃខែឆ្នាំ ត្រង់នេះ
+            let formattedDate = item.date ? item.date.split('T')[0] : '';
+
             container.innerHTML += `
                 <div class="history-item" style="opacity: ${item.completed ? '0.6' : '1'};">
                     <div>
                         <b style="text-decoration: ${item.completed ? 'line-through' : 'none'};">${item.title}</b><br>
-                        <span style="color: var(--text-secondary); font-size: 11px;">📅 ថ្ងៃទី: ${item.date} | 🔄 Repeat: ${item.repeat}</span>
+                        <span style="color: var(--text-secondary); font-size: 11px;">📅 ថ្ងៃទី: ${formattedDate} | 🔄 Repeat: ${item.repeat}</span>
                     </div>
                     <div class="action-btns">
                         <button class="btn-sm ${item.completed ? 'btn-edit' : 'btn-success'}" onclick="toggleReminderStatus(${item.id})">${item.completed ? 'មិនទាន់រួចរាល់' : 'រួចរាល់'}</button>
