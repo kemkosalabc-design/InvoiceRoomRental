@@ -493,6 +493,7 @@
         let res = await callAPI({ action: "getUsers" });
         if (res && res.status === "success") {
             userDatabase = res.users;
+        }
     }
 
     function checkSession() {
