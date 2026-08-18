@@ -474,7 +474,7 @@
     window.onload = async function() {
     await fetchUsersFromSheet();
     checkSession();
-};
+    };
 
     async function callAPI(payload) {
         try {
@@ -493,7 +493,6 @@
         let res = await callAPI({ action: "getUsers" });
         if (res && res.status === "success") {
             userDatabase = res.users;
-        }
     }
 
     function checkSession() {
