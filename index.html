@@ -554,43 +554,73 @@
     }
 
     async function initUserData() {
-        if (!currentUser || !currentUser.username) return;
+    if (!currentUser || !currentUser.username) return;
 
-        let res = await callAPI({ action: "getData", username: currentUser.username });
-        if (res && res.status === "success") {
-            historyList = (res.history || []).filter(item => item && item.room && item.room !== "undefined" && item.room !== "null");
-            rooms = res.rooms.length > 0 ? res.rooms : [...baseRooms];
-            headerInfo = res.header || {
-                nameKm: "ផ្ទះសំណាក់ - " + currentUser.username,
-                nameEn: "Guest-house", bankName: "ABA", bankAcc: "000"
-            };
+    let res = await callAPI({ action: "getData", username: currentUser.username });
+    if (res && res.status === "success") {
+        historyList = (res.history || []).filter(item => item && item.room && item.room !== "undefined" && item.room !== "null");
+        rooms = res.rooms.length > 0 ? res.rooms : [...baseRooms];
+        headerInfo = res.header || {
+            nameKm: "ផ្ទះសំណាក់ - " + currentUser.username,
+            nameEn: "Guest-house", bankName: "ABA", bankAcc: "000"
+        };
+
+        // 👇 បន្ថែមការទាញយកទិន្នន័យ Maintenance ពី Cloud (Google Sheet) មកដាក់ទីនេះ
+        if (res.maintenance && Array.isArray(res.maintenance)) {
+            maintenanceList = res.maintenance.map((item, index) => ({
+                id: item.id || (Date.now() + index),
+                date: item.date,
+                desc1: item.desc1,
+                desc2: item.desc2 || "",
+                cost: parseFloat(item.cost) || 0,
+                category: item.category
+            }));
+            // រក្សាទុកចូល LocalStorage ជា Backup ផងដែរ
+            localStorage.setItem('guesthouse_maintenance_' + currentUser.username, JSON.stringify(maintenanceList));
+        } else {
+            loadMaintenanceFromStorage();
         }
 
-        // Fetch Tab 2 & Tab 3 data if existing in storage or mock from cloud
+        // 👇 បន្ថែមការទាញយក Reminders ពី Cloud ផងដែរប្រសិនបើមាន
+        if (res.reminders && Array.isArray(res.reminders)) {
+            remindersList = res.reminders.map((item, index) => ({
+                id: item.id || (Date.now() + index),
+                title: item.room || item.title || "",
+                date: item.date,
+                repeat: item.repeat || "Never",
+                completed: item.completed || false
+            }));
+            localStorage.setItem('guesthouse_reminders_' + currentUser.username, JSON.stringify(remindersList));
+        } else {
+            loadRemindersFromStorage();
+        }
+    } else {
         loadMaintenanceFromStorage();
         loadRemindersFromStorage();
-
-        if (currentUser.role === 'founder') {
-            document.getElementById('founderSettingsBtn').style.display = 'inline-block';
-        }
-        
-        currentSelectedRoom = rooms[0] || "01";
-        setDefaultDate();
-        renderHeaderInfo();
-        renderRoomsGrid();
-        selectRoom(currentSelectedRoom);
-        initFilterOptions();
-        renderHistory();
-        renderMonthlySummary();
-        renderYearlySummary();
-        checkPaymentReminders();
-
-        // Init tab defaults
-        document.getElementById('maintDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('remDate').value = new Date().toISOString().split('T')[0];
-        renderMaintenanceTable();
-        renderRemindersList();
     }
+
+    if (currentUser.role === 'founder') {
+        document.getElementById('founderSettingsBtn').style.display = 'inline-block';
+    }
+    
+    currentSelectedRoom = rooms[0] || "01";
+    setDefaultDate();
+    renderHeaderInfo();
+    renderRoomsGrid();
+    selectRoom(currentSelectedRoom);
+    initFilterOptions();
+    renderHistory();
+    renderMonthlySummary();
+    renderYearlySummary();
+    checkPaymentReminders();
+
+    // Init tab defaults
+    document.getElementById('maintDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('remDate').value = new Date().toISOString().split('T')[0];
+    renderMaintenanceTable();
+    renderMaintenancePieChart();
+    renderRemindersList();
+}
 
     async function editUserEmail(u) {
         let currentEmail = userDatabase[u]?.email || "";
