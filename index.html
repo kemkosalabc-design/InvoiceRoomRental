@@ -1105,7 +1105,7 @@
                 <div class="history-item">
                     <div>
                         <b>បន្ទប់ ${item.room}</b><br>
-                        <span style="color: var(--text-secondary); font-size: 11px;">កាលបរិច្ឆេទ: ${item.date}</span>
+                        <span style="color: var(--text-secondary); font-size: 11px;">កាលបរិច្ឆេទ: ${item.date ? item.date.split('T')[0] : ''}</span>
                     </div>
                     <div style="background: rgba(0, 113, 227, 0.05); padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; border: 1px solid rgba(0, 113, 227, 0.2); text-align: center;">
                         💧 ${waterStr} | ⚡ ${elecStr}<br>
