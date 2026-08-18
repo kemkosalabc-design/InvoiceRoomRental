@@ -554,26 +554,7 @@
     }
 
     async function initUserData() {
-        function checkRemindersOnLoad() {
-    let notificationArea = document.getElementById('notificationArea');
-    let today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // ត្រងយកតែការរំលឹកណាដែលមិនទាន់រួចរាល់ ហើយដល់ថ្ងៃឬហួសថ្ងៃកំណត់
-    let upcomingReminders = remindersList.filter(item => {
-        if (item.completed) return false;
-        let remDate = new Date(item.date);
-        remDate.setHours(0, 0, 0, 0);
-        return remDate <= today;
-    });
-    
-    if (upcomingReminders.length > 0) {
-        let msg = upcomingReminders.map(r => `• ${r.title} (ដល់ថ្ងៃទី ${r.date})`).join('<br>');
-        // បង្ហាញការរំលឹកនៅខាងលើสุดនៃទំព័រ
-        notificationArea.innerHTML += `<div class="notification-box" style="border-left: 4px solid var(--primary); background: rgba(0, 113, 227, 0.1);">
-            <b>🔔 ការរំលឹកដែលដល់កំណត់:</b><br>${msg}
-        </div>`;
-    }
+       
     if (!currentUser || !currentUser.username) return;
 
     let res = await callAPI({ action: "getData", username: currentUser.username });
@@ -640,6 +621,27 @@
     renderMaintenanceTable();
     renderMaintenancePieChart();
     renderRemindersList();
+        
+    function checkRemindersOnLoad() {
+    let notificationArea = document.getElementById('notificationArea');
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // ត្រងយកតែការរំលឹកណាដែលមិនទាន់រួចរាល់ ហើយដល់ថ្ងៃឬហួសថ្ងៃកំណត់
+    let upcomingReminders = remindersList.filter(item => {
+        if (item.completed) return false;
+        let remDate = new Date(item.date);
+        remDate.setHours(0, 0, 0, 0);
+        return remDate <= today;
+    });
+    
+    if (upcomingReminders.length > 0) {
+        let msg = upcomingReminders.map(r => `• ${r.title} (ដល់ថ្ងៃទី ${r.date})`).join('<br>');
+        // បង្ហាញការរំលឹកនៅខាងលើสุดនៃទំព័រ
+        notificationArea.innerHTML += `<div class="notification-box" style="border-left: 4px solid var(--primary); background: rgba(0, 113, 227, 0.1);">
+            <b>🔔 ការរំលឹកដែលដល់កំណត់:</b><br>${msg}
+        </div>`;
+    }
 }
 
     async function editUserEmail(u) {
