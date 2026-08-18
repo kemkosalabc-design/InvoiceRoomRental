@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ប្រព័ន្ធគ្រប់គ្រងវិក័យបត្របន្ទប់ជួល (Google Sheets Connected)</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #0071e3; --primary-dark: #0077ed; --success: #34c759; --danger: #ff3b30; --warning: #ff9500;
             --bg-color: #f5f5f7; --card-bg: #ffffff; --alt-bg: #fbfbfd; --text-color: #1d1d1f;
-            --text-secondary: #86868b; --border-color: #d2d2d7; --input-bg: #f5f5f7; --input-focus-bg: #ffffff;a
+            --text-secondary: #86868b; --border-color: #d2d2d7; --input-bg: #f5f5f7; --input-focus-bg: #ffffff;
             --tab-active-bg: #d3e3fd; --tab-active-color: #001d35;
         }
         .dark-mode {
@@ -18,7 +19,7 @@
             --tab-active-bg: #004a77; --tab-active-color: #c2e7ff;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Kantumruy Pro', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; transition: background-color 0.3s; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; transition: background-color 0.3s; padding-bottom: 90px; }
         .container { max-width: 600px; margin: 0 auto; padding-bottom: 50px; }
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
         .auth-card { background: var(--card-bg); width: 100%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 1px solid var(--border-color); text-align: center; }
@@ -80,6 +81,43 @@
         .cal-day-num { font-weight: 700; margin-bottom: 4px; }
         .cal-rooms-list { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; }
         .cal-room-tag { background: var(--success); color: white; font-size: 9px; padding: 1px 4px; border-radius: 4px; font-weight: 600; }
+        
+        /* Bottom Navigation Toolbar mimicking image */
+        .bottom-toolbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 9998;
+            backdrop-filter: blur(10px);
+        }
+        .toolbar-item {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            gap: 4px;
+            flex: 1;
+        }
+        .toolbar-item.active {
+            color: var(--primary);
+        }
+        .toolbar-item svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
         @page { size: auto; margin: 0mm; }
         @media print {
             body * { visibility: hidden; }
@@ -152,123 +190,262 @@
         </div>
     </header>
 
-    <div class="banner">
-        <span>អត្រាប្តូរប្រាក់: 1$ = <input type="number" id="exchangeRateInput" value="4000" onchange="updateExchangeRate()"> រៀល</span>
-        <span id="currentDateDisplay" style="font-weight: 500; color: var(--primary);"></span>
-    </div>
-
-    <div id="notificationArea"></div>
-
-    <div class="section-title">
-        <span>ជ្រើសរើសបន្ទប់</span>
-        <div style="display: flex; gap: 8px;">
-            <button class="btn-success" onclick="openPaymentCalendarModal()">ថ្ងៃត្រូវបង់ប្រាក់លើកក្រោយ</button>
-            <button class="btn-sm btn-delete" onclick="deleteRoomModal()" style="background: var(--danger); color: white;">លុបបន្ទប់</button>
-            <button class="btn-sm btn-primary" onclick="addNewRoomModal()" style="width: auto;">+ បន្ថែមបន្ទប់</button>
+    <!-- TAB 1: បន្ទប់ជួល -->
+    <div id="mainTab1" class="app-tab-content">
+        <div class="banner">
+            <span>អត្រាប្តូរប្រាក់: 1$ = <input type="number" id="exchangeRateInput" value="4000" onchange="updateExchangeRate()"> រៀល</span>
+            <span id="currentDateDisplay" style="font-weight: 500; color: var(--primary);"></span>
         </div>
-    </div>
-    <div class="rooms-grid" id="roomsGridContainer"></div>
 
-    <div class="card">
-        <div class="section-title" id="formTitle">បញ្ចូលទិន្នន័យបន្ទប់</div>
-        <div class="form-group">
-            <label>📅 កាលបរិច្ឆេទ</label>
-            <input type="date" id="invoiceDate" class="form-control" onchange="onInvoiceDateChange()">
+        <div id="notificationArea"></div>
+
+        <div class="section-title">
+            <span>ជ្រើសរើសបន្ទប់</span>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-success" onclick="openPaymentCalendarModal()">ថ្ងៃត្រូវបង់ប្រាក់លើកក្រោយ</button>
+                <button class="btn-sm btn-delete" onclick="deleteRoomModal()" style="background: var(--danger); color: white;">លុបបន្ទប់</button>
+                <button class="btn-sm btn-primary" onclick="addNewRoomModal()" style="width: auto;">+ បន្ថែមបន្ទប់</button>
+            </div>
         </div>
-        <div class="grid-2">
+        <div class="rooms-grid" id="roomsGridContainer"></div>
+
+        <div class="card">
+            <div class="section-title" id="formTitle">បញ្ចូលទិន្នន័យបន្ទប់</div>
             <div class="form-group">
-                <label>💰 តម្លៃបន្ទប់ឈ្នួល ($)</label>
-                <input type="number" id="roomPrice" class="form-control" value="90" oninput="calculateInvoice()">
+                <label>📅 កាលបរិច្ឆេទ</label>
+                <input type="date" id="invoiceDate" class="form-control" onchange="onInvoiceDateChange()">
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>💰 តម្លៃបន្ទប់ឈ្នួល ($)</label>
+                    <input type="number" id="roomPrice" class="form-control" value="90" oninput="calculateInvoice()">
+                </div>
+            </div>
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 16px 0;">
+
+            <div class="utility-row">
+                <span>💧 ទឹក ០១គីបតម្លៃ: <input type="number" id="waterUnitPrice" value="2500" style="width: 75px; padding: 4px; text-align: center;" oninput="calculateInvoice()"> រៀល</span>
+                <label style="display: flex; align-items: center; gap: 6px; color: var(--danger);"><input type="checkbox" id="waterFlatRateCheck" onchange="toggleWaterFlatRate()"> គិតជាប្រចាំខែ</label>
+            </div>
+            <div class="grid-4 form-group" id="waterMeterSection">
+                <div><label style="font-size: 11px;">លេខថ្មី</label><input type="text" id="waterCurrent" class="form-control" oninput="calculateInvoice()"></div>
+                <div><label style="font-size: 11px;">លេខចាស់</label><input type="text" id="waterPrevious" class="form-control highlight-input" oninput="calculateInvoice()"></div>
+                <div><label style="font-size: 11px;">ប្រើប្រាស់</label><input type="text" id="waterConsumption" class="form-control" disabled></div>
+                <div><label style="font-size: 11px;">តម្លៃសរុប (R)</label><input type="text" id="waterTotalRiel" class="form-control" disabled></div>
+            </div>
+            <div class="form-group" id="waterFlatRateSection" style="display: none;">
+                <label style="font-size: 12px; color: var(--danger);">ទឹកប្រចាំខែ (រៀល):</label>
+                <input type="number" id="waterFlatAmount" class="form-control" value="20000" oninput="calculateInvoice()">
+            </div>
+
+            <div class="utility-row">
+                <span>⚡ អគ្គិសនី ០១គីឡូវ៉ាត់តម្លៃ: <input type="number" id="elecUnitPrice" value="1500" style="width: 75px; padding: 4px; text-align: center;" oninput="calculateInvoice()"> រៀល</span>
+                <label style="display: flex; align-items: center; gap: 6px; color: var(--danger);"><input type="checkbox" id="elecFlatRateCheck" onchange="toggleElecFlatRate()"> គិតជាប្រចាំខែ</label>
+            </div>
+            <div class="grid-4 form-group" id="elecMeterSection">
+                <div><label style="font-size: 11px;">លេខថ្មី</label><input type="text" id="elecCurrent" class="form-control" oninput="calculateInvoice()"></div>
+                <div><label style="font-size: 11px;">លេខចាស់</label><input type="text" id="elecPrevious" class="form-control highlight-input" oninput="calculateInvoice()"></div>
+                <div><label style="font-size: 11px;">ប្រើប្រាស់</label><input type="text" id="elecConsumption" class="form-control" disabled></div>
+                <div><label style="font-size: 11px;">តម្លៃសរុប (R)</label><input type="text" id="elecTotalRiel" class="form-control" disabled></div>
+            </div>
+            <div class="form-group" id="elecFlatRateSection" style="display: none;">
+                <label style="font-size: 12px; color: var(--danger);">អគ្គិសនីប្រចាំខែ (រៀល):</label>
+                <input type="number" id="elecFlatAmount" class="form-control" value="100000" oninput="calculateInvoice()">
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 16px 0;">
+            <div class="grid-extras form-group">
+                <div><label style="font-size: 11px;">🗑️ សំរាម (រៀល)</label><input type="number" id="trashFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
+                <div><label style="font-size: 11px;">🌐 អ៊ិនធឺណែត (រៀល)</label><input type="number" id="internetFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
+                <div><label style="font-size: 11px;">🅿️ ចំណត (រៀល)</label><input type="number" id="parkingFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
+                <div><label style="font-size: 11px;">🏷️ ផ្សេងៗ (រៀល)</label><input type="number" id="otherFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
+            </div>
+
+            <div class="form-group" style="background: rgba(0, 113, 227, 0.08); border: 1px solid var(--primary); padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <span style="font-size: 14px; font-weight: 700; color: var(--primary);">💰 សរុបទឹកប្រាក់ (Grand Total):</span>
+                <span id="liveGrandTotalDisplay" style="font-size: 18px; font-weight: 700; color: var(--primary);">0.00 $</span>
+            </div>
+
+            <div class="action-button-group">
+                <button class="btn-primary" id="saveBtnText" onclick="saveAndGenerateInvoice()">💾 រក្សាទុក និងបង្កើតវិក័យបត្រ</button>
+                <button class="btn-cancel-edit" id="cancelEditBtn" onclick="cancelEditing()">បោះបង់ការកែសម្រួល</button>
             </div>
         </div>
-        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 16px 0;">
 
-        <div class="utility-row">
-            <span>💧 ទឹក ០១គីបតម្លៃ: <input type="number" id="waterUnitPrice" value="2500" style="width: 75px; padding: 4px; text-align: center;" oninput="calculateInvoice()"> រៀល</span>
-            <label style="display: flex; align-items: center; gap: 6px; color: var(--danger);"><input type="checkbox" id="waterFlatRateCheck" onchange="toggleWaterFlatRate()"> គិតជាប្រចាំខែ</label>
-        </div>
-        <div class="grid-4 form-group" id="waterMeterSection">
-            <div><label style="font-size: 11px;">លេខថ្មី</label><input type="text" id="waterCurrent" class="form-control" oninput="calculateInvoice()"></div>
-            <div><label style="font-size: 11px;">លេខចាស់</label><input type="text" id="waterPrevious" class="form-control highlight-input" oninput="calculateInvoice()"></div>
-            <div><label style="font-size: 11px;">ប្រើប្រាស់</label><input type="text" id="waterConsumption" class="form-control" disabled></div>
-            <div><label style="font-size: 11px;">តម្លៃសរុប (R)</label><input type="text" id="waterTotalRiel" class="form-control" disabled></div>
-        </div>
-        <div class="form-group" id="waterFlatRateSection" style="display: none;">
-            <label style="font-size: 12px; color: var(--danger);">ទឹកប្រចាំខែ (រៀល):</label>
-            <input type="number" id="waterFlatAmount" class="form-control" value="20000" oninput="calculateInvoice()">
-        </div>
-
-        <div class="utility-row">
-            <span>⚡ អគ្គិសនី ០១គីឡូវ៉ាត់តម្លៃ: <input type="number" id="elecUnitPrice" value="1500" style="width: 75px; padding: 4px; text-align: center;" oninput="calculateInvoice()"> រៀល</span>
-            <label style="display: flex; align-items: center; gap: 6px; color: var(--danger);"><input type="checkbox" id="elecFlatRateCheck" onchange="toggleElecFlatRate()"> គិតជាប្រចាំខែ</label>
-        </div>
-        <div class="grid-4 form-group" id="elecMeterSection">
-            <div><label style="font-size: 11px;">លេខថ្មី</label><input type="text" id="elecCurrent" class="form-control" oninput="calculateInvoice()"></div>
-            <div><label style="font-size: 11px;">លេខចាស់</label><input type="text" id="elecPrevious" class="form-control highlight-input" oninput="calculateInvoice()"></div>
-            <div><label style="font-size: 11px;">ប្រើប្រាស់</label><input type="text" id="elecConsumption" class="form-control" disabled></div>
-            <div><label style="font-size: 11px;">តម្លៃសរុប (R)</label><input type="text" id="elecTotalRiel" class="form-control" disabled></div>
-        </div>
-        <div class="form-group" id="elecFlatRateSection" style="display: none;">
-            <label style="font-size: 12px; color: var(--danger);">អគ្គិសនីប្រចាំខែ (រៀល):</label>
-            <input type="number" id="elecFlatAmount" class="form-control" value="100000" oninput="calculateInvoice()">
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 16px 0;">
-        <div class="grid-extras form-group">
-            <div><label style="font-size: 11px;">🗑️ សំរាម (រៀល)</label><input type="number" id="trashFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
-            <div><label style="font-size: 11px;">🌐 អ៊ិនធឺណែត (រៀល)</label><input type="number" id="internetFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
-            <div><label style="font-size: 11px;">🅿️ ចំណត (រៀល)</label><input type="number" id="parkingFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
-            <div><label style="font-size: 11px;">🏷️ ផ្សេងៗ (រៀល)</label><input type="number" id="otherFee" class="form-control" value="0" oninput="calculateInvoice()"></div>
-        </div>
-
-        <div class="form-group" style="background: rgba(0, 113, 227, 0.08); border: 1px solid var(--primary); padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-            <span style="font-size: 14px; font-weight: 700; color: var(--primary);">💰 សរុបទឹកប្រាក់ (Grand Total):</span>
-            <span id="liveGrandTotalDisplay" style="font-size: 18px; font-weight: 700; color: var(--primary);">0.00 $</span>
-        </div>
-
-        <div class="action-button-group">
-            <button class="btn-primary" id="saveBtnText" onclick="saveAndGenerateInvoice()">💾 រក្សាទុក និងបង្កើតវិក័យបត្រ</button>
-            <button class="btn-cancel-edit" id="cancelEditBtn" onclick="cancelEditing()">បោះបង់ការកែសម្រួល</button>
-        </div>
-    </div>
-
-    <div id="printable-invoice" class="invoice-preview">
-        <div class="invoice-header">
-            <div style="font-size: 11px; line-height: 1.2;" id="invHeaderLeft"><b>ផ្ទះសំណាក់</b></div>
-            <div class="invoice-title-center">
-                <h3 id="invHeaderTitleKm">ផ្ទះសំណាក់</h3>
-                <h4 id="invHeaderTitleEn">Guest-house</h4>
-                <h5>វិក័យបត្រ / Invoice</h5>
+        <div id="printable-invoice" class="invoice-preview">
+            <div class="invoice-header">
+                <div style="font-size: 11px; line-height: 1.2;" id="invHeaderLeft"><b>ផ្ទះសំណាក់</b></div>
+                <div class="invoice-title-center">
+                    <h3 id="invHeaderTitleKm">ផ្ទះសំណាក់</h3>
+                    <h4 id="invHeaderTitleEn">Guest-house</h4>
+                    <h5>វិក័យបត្រ / Invoice</h5>
+                </div>
+                <div class="qr-box"><div id="invBankName">ABA</div><div style="font-weight: bold;" id="invBankAcc">000</div></div>
             </div>
-            <div class="qr-box"><div id="invBankName">ABA</div><div style="font-weight: bold;" id="invBankAcc">000</div></div>
-        </div>
-        <div style="font-size: 12px; margin-bottom: 4px;">ថ្ងៃទី ខែ ឆ្នាំ: <span id="invPrintFor">...</span></div>
-        <div style="font-size: 12px; margin-bottom: 8px;"><b>បន្ទប់: <span id="invPrintRoom">01</span></b> - <span id="invPrintRoomPrice">90</span>$</div>
-        
-        <div id="invWaterSectionContainer"></div>
-        <div id="invElecSectionContainer"></div>
-        
-        <div id="invExtrasContainer" style="font-size: 12px; margin-bottom: 8px; border-top: 1px dashed #000; padding-top: 4px; display: none;"></div>
+            <div style="font-size: 12px; margin-bottom: 4px;">ថ្ងៃទី ខែ ឆ្នាំ: <span id="invPrintFor">...</span></div>
+            <div style="font-size: 12px; margin-bottom: 8px;"><b>បន្ទប់: <span id="invPrintRoom">01</span></b> - <span id="invPrintRoomPrice">90</span>$</div>
+            
+            <div id="invWaterSectionContainer"></div>
+            <div id="invElecSectionContainer"></div>
+            
+            <div id="invExtrasContainer" style="font-size: 12px; margin-bottom: 8px; border-top: 1px dashed #000; padding-top: 4px; display: none;"></div>
 
-        <div class="invoice-totals" style="line-height: 1.6;">
-            សរុបថ្លៃទឹក អគ្គិសនី និងសេវាកម្មផ្សេងៗ: <span id="invPrintUtilityTotalRiel">0</span> រៀល (<span id="invPrintUtilityTotalDollar">0.00</span> $) <br>
-            សរុប Total: <span id="invPrintGrandTotal" class="grand-total-text">0.00</span> $
+            <div class="invoice-totals" style="line-height: 1.6;">
+                សរុបថ្លៃទឹក អគ្គិសនី និងសេវាកម្មផ្សេងៗ: <span id="invPrintUtilityTotalRiel">0</span> រៀល (<span id="invPrintUtilityTotalDollar">0.00</span> $) <br>
+                សរុប Total: <span id="invPrintGrandTotal" class="grand-total-text">0.00</span> $
+            </div>
+        </div>
+
+        <div style="margin-top: 16px;"><button class="btn-primary" style="background: var(--success);" onclick="window.print()">🖨️ បោះពុម្ព</button></div>
+
+        <div class="section-title" style="margin-top: 28px;">ប្រវត្តិការកត់ត្រា</div>
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchTab('history')">📋 ប្រវត្តិ</button>
+            <button class="tab-btn" onclick="switchTab('monthly')">📊 ប្រចាំខែ</button>
+            <button class="tab-btn" onclick="switchTab('yearly')">📈 ប្រចាំឆ្នាំ</button>
+        </div>
+        <div id="tab-history" class="tab-content active"><div id="historyContainer"></div></div>
+        <div id="tab-monthly" class="tab-content"><div class="filter-box"><span>ខែ:</span><select id="monthSelect" onchange="renderMonthlySummary()"></select></div><div id="monthlySummaryContainer"></div></div>
+        <div id="tab-yearly" class="tab-content"><div class="filter-box"><span>ឆ្នាំ:</span><select id="yearSelect" onchange="renderYearlySummary()"></select></div><div id="yearlySummaryContainer"></div></div>
+
+        <div class="sync-status">🟢 Cloud Connected (Google Sheets)</div>
+    </div>
+
+    <!-- TAB 2: ការថែទាំ (Maintenance) -->
+    <div id="mainTab2" class="app-tab-content" style="display: none;">
+        <div class="card">
+            <div class="section-title" id="maintFormTitle">🛠️ កត់ត្រាការថែទាំ</div>
+            <div class="form-group">
+                <label>📅 កាលបរិច្ឆេទ</label>
+                <input type="date" id="maintDate" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>📝 បរិយាយពីការថែទាំ (២ ប្រអប់)</label>
+                <textarea id="maintDesc1" class="form-control" placeholder="ប្រអប់ទី១: មូលហេតុ ឬសេចក្តីលម្អិត" style="margin-bottom: 8px;"></textarea>
+                <textarea id="maintDesc2" class="form-control" placeholder="ប្រអប់ទី២: សម្ភារៈ ឬកំណត់ចំណាំបន្ថែម"></textarea>
+            </div>
+            <div class="form-group">
+                <label>💰 តម្លៃ ($)</label>
+                <input type="number" id="maintCost" class="form-control" value="0" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>🏷️ ប្រភេទនៃការថែទាំ</label>
+                <select id="maintCategory" class="form-control">
+                    <option value="រថយន្ត">រថយន្ត</option>
+                    <option value="ម៉ាស៊ីនភ្លើង">ម៉ាស៊ីនភ្លើង</option>
+                    <option value="ម៉ាស៊ីនត្រជាក់">ម៉ាស៊ីនត្រជាក់</option>
+                    <option value="អំពូលភ្លើង">អំពូលភ្លើង</option>
+                    <option value="ក្បាលរូបីនេលាងចាន">ក្បាលរូបីនេលាងចាន</option>
+                    <option value="ក្បាលអនាម័យ">ក្បាលអនាម័យ</option>
+                    <option value="ខ្សែរឡាបូលាងចាន">ខ្សែរឡាបូលាងចាន</option>
+                    <option value="ខ្សែរអនាម័យ">ខ្សែរអនាម័យ</option>
+                    <option value="ផ្សេងៗ">ផ្សេងៗ</option>
+                </select>
+            </div>
+            <div class="action-button-group">
+                <button class="btn-primary" id="maintSaveBtn" onclick="saveMaintenanceRecord()">💾 រក្សាទុកការថែទាំ</button>
+                <button class="btn-cancel-edit" id="maintCancelBtn" onclick="cancelMaintEditing()" style="display:none;">បោះបង់</button>
+            </div>
+        </div>
+
+        <!-- Pie Chart Summary -->
+        <div class="card">
+            <div class="section-title">📊 ព័ត៌មានសង្ខេបការចំណាយតាមប្រភេទ</div>
+            <div style="width: 100%; max-width: 300px; margin: 0 auto;">
+                <canvas id="maintPieChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Table Data Behind -->
+        <div class="card">
+            <div class="section-title">📋ប្រវត្តិការថែទាំ</div>
+            <div style="overflow-x: auto;">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>ថ្ងៃខែឆ្នាំ</th>
+                            <th>ប្រភេទ</th>
+                            <th>បរិយាយ</th>
+                            <th>តម្លៃ ($)</th>
+                            <th>សកម្មភាព</th>
+                        </tr>
+                    </thead>
+                    <tbody id="maintenanceTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <div style="margin-top: 16px;"><button class="btn-primary" style="background: var(--success);" onclick="window.print()">🖨️ បោះពុម្ព</button></div>
+    <!-- TAB 3: ការរំលឹក (Reminders) -->
+    <div id="mainTab3" class="app-tab-content" style="display: none;">
+        <div class="card">
+            <div class="section-title">🔔 បង្កើតការរំលឹកថ្មី (Reminder)</div>
+            <div class="form-group">
+                <label>ឈ្មោះនៃការរំលឹក</label>
+                <input type="text" id="remTitle" class="form-control" placeholder="បញ្ចូលឈ្មោះការរំលឹក...">
+            </div>
+            <div class="form-group">
+                <label>ថ្ងៃខែឆ្នាំត្រូវរំលឹក</label>
+                <input type="date" id="remDate" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Repeat (រំលឹកឡើងវិញ)</label>
+                <select id="remRepeat" class="form-control">
+                    <option value="Never">Never</option>
+                    <option value="Daily">Daily</option>
+                    <option value="Weekdays">Weekdays</option>
+                    <option value="Weekends">Weekends</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Every 3 Months">Every 3 Months</option>
+                    <option value="Every 6 Months">Every 6 Months</option>
+                    <option value="Yearly">Yearly</option>
+                </select>
+            </div>
+            <button class="btn-primary" onclick="saveReminderRecord()">💾 រក្សាទុកការរំលឹក</button>
+        </div>
 
-    <div class="section-title" style="margin-top: 28px;">ប្រវត្តិការកត់ត្រា</div>
-    <div class="tabs-container">
-        <button class="tab-btn active" onclick="switchTab('history')">📋 ប្រវត្តិ</button>
-        <button class="tab-btn" onclick="switchTab('monthly')">📊 ប្រចាំខែ</button>
-        <button class="tab-btn" onclick="switchTab('yearly')">📈 ប្រចាំឆ្នាំ</button>
+        <div class="card">
+            <div class="section-title">📋 បញ្ជីការរំលឹករួចរាល់</div>
+            <div id="remindersListContainer"></div>
+        </div>
     </div>
-    <div id="tab-history" class="tab-content active"><div id="historyContainer"></div></div>
-    <div id="tab-monthly" class="tab-content"><div class="filter-box"><span>ខែ:</span><select id="monthSelect" onchange="renderMonthlySummary()"></select></div><div id="monthlySummaryContainer"></div></div>
-    <div id="tab-yearly" class="tab-content"><div class="filter-box"><span>ឆ្នាំ:</span><select id="yearSelect" onchange="renderYearlySummary()"></select></div><div id="yearlySummaryContainer"></div></div>
 
-    <div class="sync-status">🟢 Cloud Connected (Google Sheets)</div>
+    <!-- TAB 4: Profile -->
+    <div id="mainTab4" class="app-tab-content" style="display: none;">
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 50px; margin-bottom: 10px;">👤</div>
+            <h3 id="profileUsernameDisplay" style="color: var(--primary); margin-bottom: 6px;">-</h3>
+            <p id="profileRoleDisplay" style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">-</p>
+            <div style="text-align: left; background: var(--input-bg); padding: 14px; border-radius: 12px; font-size: 13px;">
+                <p style="margin-bottom: 8px;"><b>📍 ទីតាំងប្រតិបត្តិការ:</b> Prey Nob, Sihanoukville, Cambodia</p>
+                <p style="margin-bottom: 8px;"><b>🚗 យានយន្តផ្ទាល់ខ្លួន:</b> 2013 Lexus RX450h</p>
+                <p><b>⚙️ ប្រព័ន្ធតភ្ជាប់:</b> Google Sheets Cloud Sync</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Navigation Toolbar mimicking image -->
+<div class="bottom-toolbar">
+    <button class="toolbar-item active" onclick="switchMainTab(1)" id="tbBtn1">
+        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>បន្ទប់ជួល</span>
+    </button>
+    <button class="toolbar-item" onclick="switchMainTab(2)" id="tbBtn2">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        <span>ការថែទាំ</span>
+    </button>
+    <button class="toolbar-item" onclick="switchMainTab(3)" id="tbBtn3">
+        <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+        <span>ការរំលឹក</span>
+    </button>
+    <button class="toolbar-item" onclick="switchMainTab(4)" id="tbBtn4">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span>Profile</span>
+    </button>
 </div>
 
 <script>
@@ -287,6 +464,12 @@
     let headerInfo = {};
     let editingRecordId = null;
     let currentCalDate = new Date();
+
+    // Maintenance & Reminders state
+    let maintenanceList = [];
+    let editingMaintId = null;
+    let maintPieChartInstance = null;
+    let remindersList = [];
 
     window.onload = async function() {
         await fetchUsersFromSheet();
@@ -336,6 +519,8 @@
         const el = document.getElementById('welcomeUserDisplay');
         if (currentUser && currentUser.username) {
             el.innerText = `ជម្រាបសួរលោក/លោកស្រី ${currentUser.username}`;
+            document.getElementById('profileUsernameDisplay').innerText = currentUser.username;
+            document.getElementById('profileRoleDisplay').innerText = `Role: ${currentUser.role || 'user'}`;
         } else {
             el.innerText = "ជម្រាបសួរលោក/លោកស្រី";
         }
@@ -381,6 +566,10 @@
             };
         }
 
+        // Fetch Tab 2 & Tab 3 data if existing in storage or mock from cloud
+        loadMaintenanceFromStorage();
+        loadRemindersFromStorage();
+
         if (currentUser.role === 'founder') {
             document.getElementById('founderSettingsBtn').style.display = 'inline-block';
         }
@@ -395,27 +584,33 @@
         renderMonthlySummary();
         renderYearlySummary();
         checkPaymentReminders();
+
+        // Init tab defaults
+        document.getElementById('maintDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('remDate').value = new Date().toISOString().split('T')[0];
+        renderMaintenanceTable();
+        renderRemindersList();
     }
 
-async function editUserEmail(u) {
-    let currentEmail = userDatabase[u]?.email || "";
-    let newEmail = prompt(`បញ្ចូល Email សម្រាប់ ${u}:`, currentEmail);
-    if (newEmail !== null) {
-        let res = await callAPI({ 
-            action: "saveUser", 
-            username: u, 
-            password: userDatabase[u].pass, 
-            role: userDatabase[u].role, 
-            email: newEmail 
-        });
-        if (res && res.status === "success") {
-            alert("បានអាប់ដេត Email ជោគជ័យ!");
-            openFounderModal();
-        } else {
-            alert("មានបញ្ហាក្នុងการរក្សាទុក Email!");
+    async function editUserEmail(u) {
+        let currentEmail = userDatabase[u]?.email || "";
+        let newEmail = prompt(`បញ្ចូល Email សម្រាប់ ${u}:`, currentEmail);
+        if (newEmail !== null) {
+            let res = await callAPI({ 
+                action: "saveUser", 
+                username: u, 
+                password: userDatabase[u].pass, 
+                role: userDatabase[u].role, 
+                email: newEmail 
+            });
+            if (res && res.status === "success") {
+                alert("បានអាប់ដេត Email ជោគជ័យ!");
+                openFounderModal();
+            } else {
+                alert("មានបញ្ហាក្នុងการរក្សាទុក Email!");
+            }
         }
     }
-}
 
     async function checkPaymentReminders() {
         let notificationArea = document.getElementById('notificationArea');
@@ -449,7 +644,6 @@ async function editUserEmail(u) {
                 let formattedDueDate = `${dueDate.getDate()}-${dueDate.getMonth() + 1}-${dueDate.getFullYear()}`;
                 reminders.push(`⚠️ បន្ទប់ <b>${roomNum}</b> ត្រូវដល់កំណត់បង់ប្រាក់ក្នុងរយៈពេល ២ថ្ងៃទៀត (ថ្ងៃទី ${formattedDueDate})`);
                 
-                // ផ្ញើ Email ស្វ័យប្រវត្តិប្រសិនបើមាន Email
                 let userEmail = userDatabase[currentUser.username]?.email;
                 if (userEmail) {
                     await callAPI({ 
@@ -469,7 +663,7 @@ async function editUserEmail(u) {
         }
 
         if (reminders.length > 0) {
-            notificationArea.innerHTML = `<div class="notification-box">📢 <b>ការជូនដំណឹងការបង់ប្រាក់បន្ទប់:</b><br>` + reminders.join('<br>') + `</div>`;
+            notificationArea.innerHTML = `<div class="notification-box">📢 <b>การជូនដំណឹងការបង់ប្រាក់បន្ទប់:</b><br>` + reminders.join('<br>') + `</div>`;
         } else {
             notificationArea.innerHTML = '';
         }
@@ -1199,6 +1393,263 @@ async function editUserEmail(u) {
         if(t=='yearly') { document.querySelectorAll('.tab-btn')[2].classList.add('active'); document.getElementById('tab-yearly').classList.add('active'); renderYearlySummary(); }
     }
     function onInvoiceDateChange() { calculateInvoice(); }
+
+    // --- BOTTOM TOOLBAR NAVIGATION SWITCHER ---
+    function switchMainTab(tabIndex) {
+        for (let i = 1; i <= 4; i++) {
+            let tabContent = document.getElementById(`mainTab${i}`);
+            let tbBtn = document.getElementById(`tbBtn${i}`);
+            if (tabContent) tabContent.style.display = (i === tabIndex) ? 'block' : 'none';
+            if (tbBtn) {
+                if (i === tabIndex) tbBtn.classList.add('active');
+                else tbBtn.classList.remove('active');
+            }
+        }
+        if (tabIndex === 2) {
+            renderMaintenanceTable();
+            renderMaintenancePieChart();
+        }
+    }
+
+    // --- TAB 2: MAINTENANCE MODULE ---
+    function loadMaintenanceFromStorage() {
+        let saved = localStorage.getItem('guesthouse_maintenance_' + (currentUser ? currentUser.username : 'default'));
+        if (saved) {
+            try { maintenanceList = JSON.parse(saved); } catch(e) { maintenanceList = []; }
+        } else {
+            maintenanceList = [];
+        }
+    }
+
+    async function saveMaintenanceToStorage() {
+        localStorage.setItem('guesthouse_maintenance_' + (currentUser ? currentUser.username : 'default'), JSON.stringify(maintenanceList));
+        // Also synced or saved via cloud data type if needed, URL provided: https://docs.google.com/spreadsheets/d/1bYaH_FnqxHwdMV6JF12ZBC09zgIeaMeNml4oOkLeITk/edit?gid=1210007116#gid=1210007116
+        await saveDataToCloud("maintenance", maintenanceList);
+    }
+
+    async function saveMaintenanceRecord() {
+        let date = document.getElementById('maintDate').value;
+        let desc1 = document.getElementById('maintDesc1').value;
+        let desc2 = document.getElementById('maintDesc2').value;
+        let cost = parseFloat(document.getElementById('maintCost').value) || 0;
+        let category = document.getElementById('maintCategory').value;
+
+        if (!date) {
+            alert("សូមជ្រើសរើសថ្ងៃខែឆ្នាំ!");
+            return;
+        }
+
+        let record = {
+            id: editingMaintId ? editingMaintId : Date.now(),
+            date: date,
+            desc1: desc1,
+            desc2: desc2,
+            cost: cost,
+            category: category
+        };
+
+        if (editingMaintId) {
+            maintenanceList = maintenanceList.map(item => item.id === editingMaintId ? record : item);
+            editingMaintId = null;
+            document.getElementById('maintCancelBtn').style.display = 'none';
+            document.getElementById('maintSaveBtn').innerText = "💾 រក្សាទុកការថែទាំ";
+        } else {
+            maintenanceList.unshift(record);
+        }
+
+        await saveMaintenanceToStorage();
+        resetMaintenanceForm();
+        renderMaintenanceTable();
+        renderMaintenancePieChart();
+        alert("បានរក្សាទុកការថែទាំជោគជ័យ!");
+    }
+
+    function resetMaintenanceForm() {
+        document.getElementById('maintDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('maintDesc1').value = '';
+        document.getElementById('maintDesc2').value = '';
+        document.getElementById('maintCost').value = '0';
+        document.getElementById('maintCategory').value = 'រថយន្ត';
+        editingMaintId = null;
+        document.getElementById('maintCancelBtn').style.display = 'none';
+        document.getElementById('maintSaveBtn').innerText = "💾 រក្សាទុកការថែទាំ";
+    }
+
+    function cancelMaintEditing() {
+        resetMaintenanceForm();
+    }
+
+    function editMaintenanceRecord(id) {
+        let item = maintenanceList.find(i => i.id === id);
+        if (item) {
+            editingMaintId = item.id;
+            document.getElementById('maintDate').value = item.date;
+            document.getElementById('maintDesc1').value = item.desc1 || '';
+            document.getElementById('maintDesc2').value = item.desc2 || '';
+            document.getElementById('maintCost').value = item.cost;
+            document.getElementById('maintCategory').value = item.category;
+            document.getElementById('maintCancelBtn').style.display = 'block';
+            document.getElementById('maintSaveBtn').innerText = "💾 កែសម្រួលរួចរាល់";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    async function deleteMaintenanceRecord(id) {
+        if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យថែទាំនេះមែនទេ?")) {
+            maintenanceList = maintenanceList.filter(i => i.id !== id);
+            await saveMaintenanceToStorage();
+            renderMaintenanceTable();
+            renderMaintenancePieChart();
+        }
+    }
+
+    function renderMaintenanceTable() {
+        let tbody = document.getElementById('maintenanceTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (maintenanceList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 15px;">មិនទាន់មានទិន្នន័យការថែទាំនៅឡើយទេ</td></tr>`;
+            return;
+        }
+
+        maintenanceList.forEach(item => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.date}</td>
+                    <td><b>${item.category}</b></td>
+                    <td>${item.desc1}<br><span style="color:var(--text-secondary); font-size:11px;">${item.desc2}</span></td>
+                    <td>$${(item.cost || 0).toFixed(2)}</td>
+                    <td>
+                        <button class="btn-sm btn-edit" onclick="editMaintenanceRecord(${item.id})">កែ</button>
+                        <button class="btn-sm btn-delete" onclick="deleteMaintenanceRecord(${item.id})">លុប</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderMaintenancePieChart() {
+        let ctx = document.getElementById('maintPieChart');
+        if (!ctx) return;
+
+        let categoryTotals = {};
+        maintenanceList.forEach(item => {
+            let cat = item.category || 'ផ្សេងៗ';
+            categoryTotals[cat] = (categoryTotals[cat] || 0) + (item.cost || 0);
+        });
+
+        let labels = Object.keys(categoryTotals);
+        let data = Object.values(categoryTotals);
+
+        if (maintPieChartInstance) {
+            maintPieChartInstance.destroy();
+        }
+
+        maintPieChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        '#0071e3', '#34c759', '#ff9500', '#ff3b30', '#af52de', '#5856d6', '#5ac8fa', '#ff2d55', '#8e8e93'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { family: 'Kantumruy Pro', size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // --- TAB 3: REMINDERS MODULE ---
+    function loadRemindersFromStorage() {
+        let saved = localStorage.getItem('guesthouse_reminders_' + (currentUser ? currentUser.username : 'default'));
+        if (saved) {
+            try { remindersList = JSON.parse(saved); } catch(e) { remindersList = []; }
+        } else {
+            remindersList = [];
+        }
+    }
+
+    async function saveRemindersToStorage() {
+        localStorage.setItem('guesthouse_reminders_' + (currentUser ? currentUser.username : 'default'), JSON.stringify(remindersList));
+        // Also synced or saved via cloud data type if needed, URL provided: https://docs.google.com/spreadsheets/d/1bYaH_FnqxHwdMV6JF12ZBC09zgIeaMeNml4oOkLeITk/edit?gid=1917265216#gid=1917265216
+        await saveDataToCloud("reminders", remindersList);
+    }
+
+    async function saveReminderRecord() {
+        let title = document.getElementById('remTitle').value.trim();
+        let date = document.getElementById('remDate').value;
+        let repeat = document.getElementById('remRepeat').value;
+
+        if (!title || !date) {
+            alert("សូមបំពេញឈ្មោះការរំលឹក និងថ្ងៃខែឆ្នាំឱ្យបានត្រឹមត្រូវ!");
+            return;
+        }
+
+        let record = {
+            id: Date.now(),
+            title: title,
+            date: date,
+            repeat: repeat,
+            completed: false
+        };
+
+        remindersList.unshift(record);
+        await saveRemindersToStorage();
+        document.getElementById('remTitle').value = '';
+        renderRemindersList();
+        alert("បានបង្កើតការរំលឹកថ្មីជោគជ័យ!");
+    }
+
+    async function toggleReminderStatus(id) {
+        remindersList = remindersList.map(item => {
+            if (item.id === id) item.completed = !item.completed;
+            return item;
+        });
+        await saveRemindersToStorage();
+        renderRemindersList();
+    }
+
+    async function deleteReminderRecord(id) {
+        if (confirm("តើអ្នកពិតជាចង់លុបការរំលឹកនេះមែនទេ?")) {
+            remindersList = remindersList.filter(i => i.id !== id);
+            await saveRemindersToStorage();
+            renderRemindersList();
+        }
+    }
+
+    function renderRemindersList() {
+        let container = document.getElementById('remindersListContainer');
+        if (!container) return;
+        container.innerHTML = '';
+        if (remindersList.length === 0) {
+            container.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 15px;">មិនទាន់មានការរំលឹកនៅឡើយទេ</div>`;
+            return;
+        }
+
+        remindersList.forEach(item => {
+            container.innerHTML += `
+                <div class="history-item" style="opacity: ${item.completed ? '0.6' : '1'};">
+                    <div>
+                        <b style="text-decoration: ${item.completed ? 'line-through' : 'none'};">${item.title}</b><br>
+                        <span style="color: var(--text-secondary); font-size: 11px;">📅 ថ្ងៃទី: ${item.date} | 🔄 Repeat: ${item.repeat}</span>
+                    </div>
+                    <div class="action-btns">
+                        <button class="btn-sm ${item.completed ? 'btn-edit' : 'btn-success'}" onclick="toggleReminderStatus(${item.id})">${item.completed ? 'មិនទាន់រួចរាល់' : 'រួចរាល់'}</button>
+                        <button class="btn-sm btn-delete" onclick="deleteReminderRecord(${item.id})">លុប</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
 </script>
 </body>
 </html>
